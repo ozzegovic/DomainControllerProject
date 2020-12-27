@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{839D0BB1-2A5B-4722-8FAB-A8504FE913E3}</ProjectGuid>
+    <ProjectGuid>{1CB1E59B-8B70-43ED-94FF-E75C43857A76}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Client</RootNamespace>
-    <AssemblyName>Client</AssemblyName>
+    <RootNamespace>DomainController</RootNamespace>
+    <AssemblyName>DomainController</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -44,10 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthenticationService\AuthService.cs" />
+    <Compile Include="AuthenticationService\IAuthenticationService.cs" />
+    <Compile Include="Database.cs" />
+    <Compile Include="DomainController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proxy\DCProxy.cs" />
+    <Compile Include="Proxy\AuthProxy.cs" />
     <Compile Include="Proxy\ServiceProxy.cs" />
+    <Compile Include="Proxy\TGSProxy.cs" />
+    <Compile Include="TicketGrantingService\DNSTable.cs" />
+    <Compile Include="TicketGrantingService\ITicketGrantingService.cs" />
+    <Compile Include="TicketGrantingService\TGService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
