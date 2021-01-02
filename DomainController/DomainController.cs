@@ -1,11 +1,10 @@
 ﻿using Contracts;
+using Contracts.Models;
 using DomainController.Proxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DomainController
 {
@@ -19,7 +18,7 @@ namespace DomainController
         byte[] sessionKey;
 
         // SendResponse: gets the response and then compares it to the stored hash in the database
-        public Tuple<byte[], string> SendResponse(string username, byte[] response)
+        public ClientSessionData SendResponse(string username, byte[] response)
         {
             bool authenticated = false;
             using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
@@ -55,7 +54,7 @@ namespace DomainController
                         Console.WriteLine($"Ticket Granting Service: Requested {requestedService} found. Details: {serviceFound}.");
                         Console.WriteLine("Ticket Granting Service: Sending session key and service address to the client...");
                         // return all info to the client
-                        return new Tuple<byte[], string>(sessionKey, serviceFound);
+                        return new ClientSessionData(sessionKey, serviceFound);
                     }
                     catch (FaultException<SecurityException> ex)
                     {

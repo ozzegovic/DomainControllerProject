@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Contracts.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -35,6 +36,6 @@ namespace Contracts
         // TO DO: remove username, add sessions 
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        Tuple<byte[], string> SendResponse(string username, byte[] response);
+        ClientSessionData SendResponse(string username, byte[] response);
     }
 }
