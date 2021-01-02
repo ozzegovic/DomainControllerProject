@@ -53,6 +53,10 @@ namespace DomainController
                     {
                         serviceFound = tgsProxy.ServiceExists(requestedService);
                         Console.WriteLine($"Ticket Granting Service: Requested {requestedService} found. Details: {serviceFound}.");
+
+                        serviceFound = tgsProxy.CheckOnlineService(serviceFound);
+                        Console.WriteLine($"Ticket Granting Service: {serviceFound} is active.");
+
                         Console.WriteLine("Ticket Granting Service: Sending session key and service address to the client...");
                         // return all info to the client
                         return new Tuple<byte[], string>(sessionKey, serviceFound);
@@ -98,13 +102,94 @@ namespace DomainController
                 }
             }
         }
-
+        string serviceUser;
         // service authentication
         // challenge response protocol
+        // check if service account exists
+        // return challenge if exists
         public short startAuthetication(string serviceName)
         {
-            short challenge =  23;
-            return challenge;
+            serviceUser = serviceName;
+            using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
+            {
+                try
+                {
+                    short challenge = authProxy.AuthenticateUser(serviceName);
+                    return challenge;
+                }
+                catch (FaultException<SecurityException> ex)
+                {
+                    Console.WriteLine(ex.Detail.Message);
+                    throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    throw new FaultException<SecurityException>(new SecurityException(ex.Message));
+
+                }
+            }
+        }
+
+
+        // service sends an encrypted response 
+        // DC forwards it to AS for password validation
+        // after confirmation, forward to TGS 
+        public bool SendResponse(byte[] response)
+        {
+            bool authenticated = false;
+            string svcFound;
+            using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
+            {
+                try
+                {
+                    authenticated = authProxy.CheckPassword(serviceUser, response);
+
+                }
+                catch (FaultException<SecurityException> ex)
+                {
+                    Console.WriteLine(ex.Detail.Message);
+                    throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    throw new FaultException<SecurityException>(new SecurityException(ex.Message));
+
+                }
+            }
+
+            if (!authenticated)
+                throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: Service failed to authenticate."));
+            else
+            {
+                using (tgsProxy = new TGSProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10001/TGService"))
+                {
+                    try
+                    {
+                        svcFound = tgsProxy.ServiceExists(serviceUser);
+                        Console.WriteLine($"Ticket Granting Service: Requested {serviceUser} found. Details: {svcFound}.");
+                        Console.WriteLine($"Ticket Granting Service: Sending confirmation to {serviceUser}...");
+
+                        tgsProxy.AddOnlineService(svcFound);
+                        Console.WriteLine($"Ticket Granting Service: {svcFound} added to active services list.");
+                        // return authentication confirmation
+                        return true;
+                    }
+                    catch (FaultException<SecurityException> ex)
+                    {
+                        Console.WriteLine(ex.Detail.Message);
+                        throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        throw new Exception(ex.Message);
+                    }
+                }
+            }
         }
 
 

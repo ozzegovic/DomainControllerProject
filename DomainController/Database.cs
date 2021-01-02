@@ -16,6 +16,7 @@ namespace DomainController
         {
             string user;
             string pass;
+            // fill database with client users
             for (int i = 0; i < 10; i++)
             {
                 user = "username" + i;
@@ -23,6 +24,9 @@ namespace DomainController
 
                 usersDB.Add(user, computeHash(pass));
             }
+
+            // add service accounts
+            usersDB.Add("DataManagementService", computeHash("pass"));
 
             byte[] computeHash(string password)
             { 

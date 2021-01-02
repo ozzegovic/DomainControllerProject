@@ -14,6 +14,14 @@ namespace DomainController.TicketGrantingService
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         string ServiceExists(string serviceAddress);
-        
+
+        [OperationContract]
+        [FaultContract(typeof(SecurityException))]
+        bool AddOnlineService(string serviceAddress);
+
+        [OperationContract]
+        [FaultContract(typeof(SecurityException))]
+        string CheckOnlineService(string serviceAddress);
+
     }
 }

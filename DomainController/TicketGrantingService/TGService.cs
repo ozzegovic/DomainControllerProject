@@ -11,7 +11,6 @@ namespace DomainController.TicketGrantingService
     public class TGService : ITicketGrantingService
     {
 
-        // TO DO: check if the service is in dnsActiveServices list
         // currently: checks if the service exists in the dnsTable and returns the full address
         // Client then uses this address to connect to the service
         public string ServiceExists(string serviceAddress)
@@ -22,6 +21,31 @@ namespace DomainController.TicketGrantingService
             }
             else
                 return DNSTable.dnsTable[serviceAddress] + "/" + serviceAddress;
+        }
+
+        // Add the service to the dnsActiveServices list
+        // TO DO: instad serviceAddress,true add serviceAddres, serviceIdentity
+        public bool AddOnlineService(string serviceAddress)
+        {
+            if (!DNSActiveServices.dnsActiveServices.ContainsKey(serviceAddress))
+            {
+                DNSActiveServices.dnsActiveServices.Add(serviceAddress, true);
+                return true;
+            }
+            else
+                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service already online."));
+        }
+
+
+        // checks if existing service is started
+        public string CheckOnlineService(string serviceAddress)
+        {
+            if (!DNSActiveServices.dnsActiveServices.ContainsKey(serviceAddress))
+            {
+                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service is not online."));
+            }
+            else
+                return serviceAddress;
         }
     }
 }

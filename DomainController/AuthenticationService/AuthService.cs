@@ -33,7 +33,7 @@ namespace DomainController
         }
 
 
-        // after receiving ''response'' from the client 
+        // after receiving ''response'' from the client/service
         // encrypt the sent challenge with the stored password hash
         // if the received response and the encryption are the same, user authentication is complete
         public bool CheckPassword(string username, byte[] response)

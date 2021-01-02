@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ namespace Service
 
             Console.WriteLine("Data management service started...");
 
+            SHA256 sha256Hash = SHA256.Create();
 
             // connection with domain controller
             NetTcpBinding binding = new NetTcpBinding();
@@ -33,14 +35,19 @@ namespace Service
                 using (DCProxy proxy = new DCProxy(binding, address))
                 {
 
-                    short challenge = proxy.startAuthetication(addressClient);
-                    //token = proxy.SendResponse(challenge.ToString());
+                    short challenge = proxy.startAuthetication("DataManagementService");
+                    byte[] passwordHash = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes("pass"));
+
+                    byte[] response = _3DESAlgorithm.Encrypt(challenge.ToString(), passwordHash);
+
+                    bool sucess = proxy.SendResponse(response);
                 }
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
             }
+
             Console.ReadLine();
 
         }
