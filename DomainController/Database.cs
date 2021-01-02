@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Contracts.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -9,25 +10,27 @@ namespace DomainController
 {
     public class Database
     {
-        internal static Dictionary<string, byte[]> usersDB= new Dictionary<string, byte[]>();
+        internal static Dictionary<string, User> usersDB= new Dictionary<string, User>();
         static SHA256 sha256Hash = SHA256.Create();
 
         static Database()
         {
-            string user;
+            string username;
             string pass;
+            User user;
+
             for (int i = 0; i < 10; i++)
             {
-                user = "username" + i;
+                username = "username" + i;
                 pass = "password" + i;
+                user = new User(username, computeHash(pass).ToString());
 
-                usersDB.Add(user, computeHash(pass));
+                usersDB.Add(username, user);
             }
 
             byte[] computeHash(string password)
-            { 
+            {
                 return sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(password));
-               
             }
 
         }
