@@ -78,5 +78,25 @@ namespace DomainController.Proxy
                 throw new Exception(e.Message);
             }
         }
+
+        //generate session key 
+        public string GenerateSessionKey()
+        {
+            try
+            {
+                return factory.GenerateSessionKey();
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
     }
 }

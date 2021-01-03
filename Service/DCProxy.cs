@@ -35,11 +35,11 @@ namespace Service
           
         }
 
-        public bool SendResponse(byte[] response)
+        public bool SendResponseService(byte[] response)
         {
             try
             {
-                return factory.SendResponse(response);
+                return factory.SendResponseService(response);
             }
             catch (FaultException<SecurityException> e)
             {

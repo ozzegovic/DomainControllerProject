@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,6 +47,15 @@ namespace DomainController.TicketGrantingService
             }
             else
                 return serviceAddress;
+        }
+
+        public string GenerateSessionKey()
+        {
+            RandomNumberGenerator rng = RandomNumberGenerator.Create();
+            byte[] key = new byte[24]; // For a 192-bit key
+            rng.GetBytes(key);
+
+            return ASCIIEncoding.ASCII.GetString(key);
         }
     }
 }

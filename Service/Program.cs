@@ -19,6 +19,7 @@ namespace Service
 
             ServiceHost serviceHost = new ServiceHost(typeof(DataManagement));
             serviceHost.AddServiceEndpoint(typeof(IDataManagement), bindingClient, addressClient);
+            serviceHost.AddServiceEndpoint(typeof(IDataManagementDC), bindingClient, addressClient);
             serviceHost.Open();
 
             Console.WriteLine("Data management service started...");
@@ -40,7 +41,7 @@ namespace Service
 
                     byte[] response = _3DESAlgorithm.Encrypt(challenge.ToString(), passwordHash);
 
-                    bool sucess = proxy.SendResponse(response);
+                    bool success = proxy.SendResponseService(response);
                 }
             }
             catch(Exception e)

@@ -43,11 +43,11 @@ namespace DomainController.Proxy
         // after receiving ''response'' from the client/service
         // encrypt the sent challenge with the stored password hash
         // if the received response and the encryption are the same, user authentication is complete
-        public bool CheckPassword(string username, byte[] response)
+        public bool CheckPassword(string username,short challenge, byte[] response)
         {
             try
             {
-                return factory.CheckPassword(username, response);
+                return factory.CheckPassword(username, challenge, response);
             }
             catch (FaultException<SecurityException> e)
             {

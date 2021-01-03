@@ -9,6 +9,9 @@ namespace DomainController
 {
     public class Database
     {
+        // save session data
+        internal static Dictionary<string, UserRequest> usersRequestsDB = new Dictionary<string, UserRequest>();
+
         internal static Dictionary<string, byte[]> usersDB= new Dictionary<string, byte[]>();
         static SHA256 sha256Hash = SHA256.Create();
 

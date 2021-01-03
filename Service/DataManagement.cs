@@ -2,13 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Service
 {
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class DataManagement : IDataManagement, IDataManagementDC
     {
+        byte[] key;
+        byte[] decryptedKey;
+        SHA256 sha256Hash = SHA256.Create();
+
         // TO DO: Change return type to byte[]
         // decrypt request
         // read data from database
@@ -16,6 +23,12 @@ namespace Service
         public bool Read(byte[] encryptedData)
         {
             Console.WriteLine("Received encrypted READ request");
+
+            byte[] decryptedData = _3DESAlgorithm.Decrypt(encryptedData, decryptedKey);
+            Console.WriteLine($"DEcrypted key: {BitConverter.ToString(decryptedKey)}");
+
+            Console.WriteLine($"DEcrypted data: {ASCIIEncoding.ASCII.GetString(decryptedData)}");
+
             return true;
         }
 
@@ -26,16 +39,27 @@ namespace Service
         public bool Write(byte[] encryptedData)
         {
             Console.WriteLine("Received encrypted WRITE request");
+
+            byte[] decryptedData = _3DESAlgorithm.Decrypt(encryptedData, decryptedKey);
+            Console.WriteLine($"DEcrypted key: {BitConverter.ToString(decryptedKey)}");
+
+            Console.WriteLine($"DEcrypted data: {ASCIIEncoding.ASCII.GetString(decryptedData)}");
+
             return true;
         }
 
 
         // Domain Controller sends session key after a client requested it
-        // Domain controller can remove it from the active services list if it cannot connect or doesnt receive any answer
-        // TO DO: 
+        // TO DO: Domain controller can remove it from the active services list if it cannot connect/doesnt receive any answer
         public bool SendSessionKey(byte[] sessionKey)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Received encrypted session key");
+
+            key = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes("pass"));
+            decryptedKey = _3DESAlgorithm.Decrypt(sessionKey, key);
+            Console.WriteLine($"DEcrypted key: {BitConverter.ToString(decryptedKey)}");
+
+            return true;
         }
     }
 }

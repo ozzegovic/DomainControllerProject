@@ -14,12 +14,15 @@ namespace Contracts
 
         public static byte[] Encrypt(string plaintext, byte[] secretKey)
         {
-            var array = secretKey;//initialization
-            int bytesToEliminate = 8;
-            int newLength = array.Length - bytesToEliminate;
-            var secretkey = new byte[newLength];
-            Array.Copy(array, bytesToEliminate, secretkey, 0, newLength);
-
+            var secretkey = secretKey;//initialization
+            if (secretKey.Length == 32)
+            {
+                var array = secretKey;//initialization
+                int bytesToEliminate = 8;
+                int newLength = array.Length - bytesToEliminate;
+                secretkey = new byte[newLength];
+                Array.Copy(array, bytesToEliminate, secretkey, 0, newLength);
+            }
             byte[] plaintextInput = ASCIIEncoding.ASCII.GetBytes(plaintext);     
             byte[] encryptedOutput = null;
 
@@ -47,12 +50,15 @@ namespace Contracts
 
         public static byte[] Decrypt(byte[] input, byte[] secretKey)
         {
-            var array = secretKey;//initialization
-            int bytesToEliminate = 8;
-            int newLength = array.Length - bytesToEliminate;
-            var secretkey = new byte[newLength];
-            Array.Copy(array, bytesToEliminate, secretkey, 0, newLength);
-
+            var secretkey = secretKey;//initialization
+            if (secretKey.Length == 32)
+            {
+                var array = secretKey;//initialization
+                int bytesToEliminate = 8;
+                int newLength = array.Length - bytesToEliminate;
+                secretkey = new byte[newLength];
+                Array.Copy(array, bytesToEliminate, secretkey, 0, newLength);
+            }
 
             byte[] encryptedInput = input;        
             byte[] decryptedOutput = null;

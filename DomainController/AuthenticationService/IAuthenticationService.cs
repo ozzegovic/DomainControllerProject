@@ -17,6 +17,6 @@ namespace DomainController.AuthenticationService
 
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        bool CheckPassword(string username, byte[] response);
+        bool CheckPassword(string username,short challenge, byte[] response);
     }
 }

@@ -23,5 +23,8 @@ namespace DomainController.TicketGrantingService
         [FaultContract(typeof(SecurityException))]
         string CheckOnlineService(string serviceAddress);
 
+        [OperationContract]
+        [FaultContract(typeof(SecurityException))]
+        string GenerateSessionKey();
     }
 }
