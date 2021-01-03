@@ -13,8 +13,6 @@ namespace DomainController
     public class AuthService : IAuthenticationService
     {
         
-        short challenge = 300;
-
         // checking if user exists in the database
         // if user exists send a challenge
         public short AuthenticateUser(string username)
@@ -25,7 +23,7 @@ namespace DomainController
             else
             {
                 Console.WriteLine($"Authentication service: {username} found.");
-                //challenge = GenerateChallenge();
+                short challenge = GenerateChallenge();
                 Console.WriteLine($"Authentication service: Sending challenge.");
 
                 return challenge;
@@ -33,10 +31,10 @@ namespace DomainController
         }
 
 
-        // after receiving ''response'' from the client 
+        // after receiving ''response'' from the client/service
         // encrypt the sent challenge with the stored password hash
         // if the received response and the encryption are the same, user authentication is complete
-        public bool CheckPassword(string username, byte[] response)
+        public bool CheckPassword(string username, short challenge, byte[] response)
         {
 
             byte[] key = Database.usersDB[username];

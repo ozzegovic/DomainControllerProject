@@ -24,23 +24,31 @@ namespace Service
             {
                 return factory.startAuthetication(serviceName);
             }
+            catch (FaultException<SecurityException> e)
+            {
+                throw new Exception(e.Detail.Message);
+            }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
           
         }
-        //public byte[] SendResponse(string username, byte[] response)
-        //{
-        //    try
-        //    {
-        //         factory.SendResponse(response);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("Error: {0}", e.Message);
-        //    }
-        //    return null;
-        //}
+
+        public bool SendResponseService(byte[] response)
+        {
+            try
+            {
+                return factory.SendResponseService(response);
+            }
+            catch (FaultException<SecurityException> e)
+            {
+                throw new Exception(e.Detail.Message);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
     }
 }

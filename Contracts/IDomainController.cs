@@ -8,33 +8,36 @@ using System.Threading.Tasks;
 namespace Contracts
 {
     [ServiceContract]
-    public interface IDomainControllerClient : IDomainController
+    public interface IDomainControllerClient 
     {
         //if user exists, return challenge
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         short startAuthetication(string username, string service);
 
+        // compare the response with the user password from the database
+        // return session key and address of the service
+        [OperationContract]
+        [FaultContract(typeof(SecurityException))]
+        Tuple<byte[], string> SendResponse(byte[] response);
+
     }
 
     [ServiceContract]
-    public interface IDomainControllerService : IDomainController
+    public interface IDomainControllerService 
     {
         // if service exists, return challenge
-        // check later how to authenticate a service
-        // is there a difference between a service account and user account authentication
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         short startAuthetication(string serviceName);
-    }
 
-    [ServiceContract]
-    public interface IDomainController
-    {
-        // compare the response with the user password from the database
-        // TO DO: remove username, add sessions 
+        // compare the response with the service password from the database
+        // return true if authenticated, session key is sent only after there is an authenticated client
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        Tuple<byte[], string> SendResponse(string username, byte[] response);
+        bool SendResponseService(byte[] response);
+
     }
+
+
 }

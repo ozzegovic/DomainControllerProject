@@ -1,4 +1,5 @@
-﻿using DomainController.TicketGrantingService;
+﻿using Contracts;
+using DomainController.TicketGrantingService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,73 @@ namespace DomainController.Proxy
             {
                 return factory.ServiceExists(serviceAddress);
             }
-            catch(Exception e)
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
+
+        // after service authentication, add it to the active services list
+        public bool AddOnlineService(string serviceAddress)
+        {
+            try
+            {
+                return factory.AddOnlineService(serviceAddress);
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
+
+        //check if requested service is active
+        public string CheckOnlineService(string serviceAddress)
+        {
+            try
+            {
+                return factory.CheckOnlineService(serviceAddress);
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
+
+        //generate session key 
+        public string GenerateSessionKey()
+        {
+            try
+            {
+                return factory.GenerateSessionKey();
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
             {
 
                 throw new Exception(e.Message);

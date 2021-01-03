@@ -37,11 +37,11 @@ namespace Client.Proxy
            
         }
 
-        public Tuple<byte[],string> SendResponse(string username, byte[] response)
+        public Tuple<byte[],string> SendResponse(byte[] response)
         {
             try
             {
-                return factory.SendResponse(username, response);
+                return factory.SendResponse(response);
             }
             catch (FaultException<SecurityException> e)
             {

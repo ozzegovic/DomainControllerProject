@@ -54,9 +54,11 @@
     <Compile Include="Proxy\AuthProxy.cs" />
     <Compile Include="Proxy\ServiceProxy.cs" />
     <Compile Include="Proxy\TGSProxy.cs" />
+    <Compile Include="TicketGrantingService\DNSActiveServices.cs" />
     <Compile Include="TicketGrantingService\DNSTable.cs" />
     <Compile Include="TicketGrantingService\ITicketGrantingService.cs" />
     <Compile Include="TicketGrantingService\TGService.cs" />
+    <Compile Include="UserRequest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

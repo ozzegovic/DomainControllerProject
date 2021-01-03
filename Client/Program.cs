@@ -21,20 +21,28 @@ namespace Client
             byte[] token = null;
             SHA256 sha256Hash = SHA256.Create();
             Tuple<byte[], string> sessionTuple;
+            byte[] key;
+
+            string username;
+            string password;
+            Console.WriteLine("Enter username:");
+            username = Console.ReadLine();
+            Console.WriteLine("Enter password:");
+            password = Console.ReadLine();
 
             try
             {
                 using (DCProxy proxy = new DCProxy(binding, address))
                 {
 
-                    short challenge = proxy.startAuthetication("username1", "DataManagementService");
+                    short challenge = proxy.startAuthetication(username, "DataManagementService");
 
-                    byte[] key = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes("password1"));
+                    key = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(password));
 
                     byte[] response = _3DESAlgorithm.Encrypt(challenge.ToString(), key);
 
                     //sessionTuple =  session key, address of the requested service
-                    sessionTuple = proxy.SendResponse("username1", response);
+                    sessionTuple = proxy.SendResponse(response);
                     Console.WriteLine($"Found service address: {sessionTuple.Item2}");
 
 
@@ -43,9 +51,13 @@ namespace Client
                 NetTcpBinding bindingService = new NetTcpBinding();
                 using (ServiceProxy proxy = new ServiceProxy(bindingService, sessionTuple.Item2))
                 {
-                    
-                    proxy.Read(sessionTuple.Item1);
-                    proxy.Write(sessionTuple.Item1);
+
+                    string data = "test";
+                    byte[] decryptedKey = _3DESAlgorithm.Decrypt(sessionTuple.Item1, key);
+                    Console.WriteLine(BitConverter.ToString(decryptedKey));
+                    byte[] encryptedData = _3DESAlgorithm.Encrypt(data, decryptedKey);
+                    proxy.Read(encryptedData);
+                    proxy.Write(encryptedData);
 
                 }
 

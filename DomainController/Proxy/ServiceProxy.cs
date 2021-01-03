@@ -2,18 +2,42 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DomainController
 {
-    public class ServiceProxy : IDataManagementDC
+    public class ServiceProxy : ChannelFactory<IDataManagementDC>, IDataManagementDC, IDisposable
     {
         // authenticated client requested a DataManagement service (service is active)
-        // TO DO: send encrypted session key to the service
+
+        IDataManagementDC factory;
+
+        public ServiceProxy(NetTcpBinding binding, string address) : base(binding, address)
+        {
+            factory = this.CreateChannel();
+        }
+
         public bool SendSessionKey(byte[] sessionKey)
         {
-            throw new NotImplementedException();
+
+            try
+            {
+                factory.SendSessionKey(sessionKey);
+                return true;
+            }
+            catch (FaultException<SecurityException> e)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(e.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(e.Message));
+            }
         }
     }
 }
