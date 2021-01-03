@@ -1,4 +1,5 @@
 ﻿using Contracts;
+using Contracts.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace Client.Proxy
            
         }
 
-        public Tuple<byte[],string> SendResponse(byte[] response)
+        public ClientSessionData SendResponse(string username, byte[] response)
         {
             try
             {

@@ -1,5 +1,7 @@
 ﻿using Client.Proxy;
 using Contracts;
+using Contracts.Cryptography;
+using Contracts.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +22,8 @@ namespace Client
             string address = "net.tcp://localhost:9999/DomainControllerClient";
             byte[] token = null;
             SHA256 sha256Hash = SHA256.Create();
-            Tuple<byte[], string> sessionTuple;
-            byte[] key;
+            ChallengeResponse cr = new ChallengeResponse();
+            ClientSessionData sessionData;
 
             string username;
             string password;
@@ -29,38 +31,34 @@ namespace Client
             username = Console.ReadLine();
             Console.WriteLine("Enter password:");
             password = Console.ReadLine();
+            byte[] pwBytes = ASCIIEncoding.ASCII.GetBytes(password);
+            string key;
 
             try
             {
                 using (DCProxy proxy = new DCProxy(binding, address))
                 {
+                    key = sha256Hash.ComputeHash(pwBytes).ToString();
+                    short salt = proxy.startAuthetication("username1", "DataManagementService");
+                    byte[] response = cr.Encrypt(key, salt);
 
-                    short challenge = proxy.startAuthetication(username, "DataManagementService");
-
-                    key = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(password));
-
-                    byte[] response = _3DESAlgorithm.Encrypt(challenge.ToString(), key);
-
-                    //sessionTuple =  session key, address of the requested service
-                    sessionTuple = proxy.SendResponse(response);
-                    Console.WriteLine($"Found service address: {sessionTuple.Item2}");
-
-
+                    sessionData = proxy.SendResponse(response);
+                    Console.WriteLine($"Found service address: {sessionData.ServiceAddress}");
                 }
 
+
                 NetTcpBinding bindingService = new NetTcpBinding();
-                using (ServiceProxy proxy = new ServiceProxy(bindingService, sessionTuple.Item2))
+                using (ServiceProxy proxy = new ServiceProxy(bindingService, sessionData.ServiceAddress))
                 {
 
                     string data = "test";
-                    byte[] decryptedKey = _3DESAlgorithm.Decrypt(sessionTuple.Item1, key);
+                    byte[] decryptedKey = _3DESAlgorithm.Decrypt(sessionData.SessionKey, ASCIIEncoding.ASCII.GetBytes(key));
                     Console.WriteLine(BitConverter.ToString(decryptedKey));
                     byte[] encryptedData = _3DESAlgorithm.Encrypt(data, decryptedKey);
                     proxy.Read(encryptedData);
                     proxy.Write(encryptedData);
 
                 }
-
             }
             catch (Exception e)
             {
@@ -68,8 +66,6 @@ namespace Client
             }
 
             Console.ReadLine();
-           
-
         }
     }
 }

@@ -1,11 +1,10 @@
 ﻿using Contracts;
+using Contracts.Models;
 using DomainController.Proxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DomainController
 {
@@ -22,7 +21,7 @@ namespace DomainController
         string key;
 
         // SendResponse: gets the response and then compares it to the stored hash in the database
-        public Tuple<byte[], string> SendResponse(byte[] response)
+        public ClientSessionData SendResponse(string username, byte[] response)
         {
             string sessionId = OperationContext.Current.SessionId;
             if (!Database.usersRequestsDB.ContainsKey(sessionId))
@@ -106,7 +105,7 @@ namespace DomainController
                 }
             }
             Console.WriteLine("Domain controller: Sending session key and service address to the client...");
-            return new Tuple<byte[], string>(Database.usersRequestsDB[sessionId].SessionKey, serviceFound);
+            return new ClientSessionData(Database.usersRequestsDB[sessionId].SessionKey, serviceFound);
 
         }
 

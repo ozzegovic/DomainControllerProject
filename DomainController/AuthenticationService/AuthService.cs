@@ -1,4 +1,6 @@
 ﻿using Contracts;
+using Contracts.Cryptography;
+using Contracts.Models;
 using DomainController.AuthenticationService;
 using System;
 using System.Collections.Generic;
@@ -12,20 +14,20 @@ namespace DomainController
 {
     public class AuthService : IAuthenticationService
     {
-        
         // checking if user exists in the database
         // if user exists send a challenge
         public short AuthenticateUser(string username)
         {
+            short challenge;
+            User user = Database.usersDB[username];
 
-            if (!Database.usersDB.ContainsKey(username))
-                throw new FaultException<SecurityException>(new SecurityException("Authentication Service: Username not found"));
+            if (user == null)
+                throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: Username '{username}' not found"));
             else
             {
                 Console.WriteLine($"Authentication service: {username} found.");
                 short challenge = GenerateChallenge();
                 Console.WriteLine($"Authentication service: Sending challenge.");
-
                 return challenge;
             }
         }
@@ -36,11 +38,16 @@ namespace DomainController
         // if the received response and the encryption are the same, user authentication is complete
         public bool CheckPassword(string username, short challenge, byte[] response)
         {
+            User user = Database.usersDB[username];
+            if(user == null)
+            {
+                throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: Username '{username}' doesn't exist"));
+            }
 
-            byte[] key = Database.usersDB[username];
-            byte[] resp = _3DESAlgorithm.Encrypt(challenge.ToString(), key);
+            ChallengeResponse cr = new ChallengeResponse();
+            byte[] expected = cr.Encrypt(user.PasswordHash, user.LastChallenge);
 
-            if(Equals(resp, response))
+            if(Equals(expected, response))
             {
                 Console.WriteLine($"Authentication service: {username} authenticated.");
                 return true; 
@@ -49,17 +56,14 @@ namespace DomainController
             {
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service: Invalid password"));
             }
-
-
-
-
         }
+
         // random 16bit number generator
         private short GenerateChallenge()
         {
             Random r = new Random();
-            Console.WriteLine($"Authentication service: generated challenge.");
-            return Convert.ToInt16(r.Next(short.MaxValue));
+            Console.WriteLine("Authentication service: generated challenge.");
+            return Convert.ToInt16(r.Next(0, short.MaxValue));
         }
 
         //Checking if byte arrays are equal
