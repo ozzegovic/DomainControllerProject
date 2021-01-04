@@ -39,7 +39,7 @@ namespace Client
                 using (DCProxy proxy = new DCProxy(binding, address))
                 {
                     key = sha256Hash.ComputeHash(pwBytes);
-                    short salt = proxy.startAuthetication("username1", "DataManagementService");
+                    short salt = proxy.startAuthetication(username, "DataManagementService");
                     byte[] response = cr.Encrypt(key, salt);
 
                     sessionData = proxy.SendResponse(response);
