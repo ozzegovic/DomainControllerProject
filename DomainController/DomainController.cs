@@ -1,10 +1,12 @@
 ﻿using Contracts;
+using Contracts.Cryptography;
 using Contracts.Models;
 using DomainController.Proxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text;
 
 namespace DomainController
 {
@@ -21,7 +23,7 @@ namespace DomainController
         string key;
 
         // SendResponse: gets the response and then compares it to the stored hash in the database
-        public ClientSessionData SendResponse(string username, byte[] response)
+        public ClientSessionData SendResponse(byte[] response)
         {
             string sessionId = OperationContext.Current.SessionId;
             if (!Database.usersRequestsDB.ContainsKey(sessionId))
@@ -30,12 +32,11 @@ namespace DomainController
             }
 
             bool authenticated = false;
-            using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
+            using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
                 {
-                    authenticated = authProxy.CheckPassword(Database.usersRequestsDB[sessionId].Username,
-                        Database.usersRequestsDB[sessionId].Challenge, response);
+                    authenticated = authProxy.CheckPassword(Database.usersRequestsDB[sessionId], response);
 
                 }
                 catch (FaultException<SecurityException> ex)
@@ -68,7 +69,8 @@ namespace DomainController
 
                         Console.WriteLine("Ticket Granting Service: Generating session key ...");
                         key = tgsProxy.GenerateSessionKey();
-                        Database.usersRequestsDB[sessionId].SessionKey = _3DESAlgorithm.Encrypt(key, Database.usersDB[Database.usersRequestsDB[sessionId].Username]);
+                        byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].Username];
+                        Database.usersRequestsDB[sessionId].SessionKey = _3DESAlgorithm.Encrypt(key, pwHash);
 
                     }
                     catch (FaultException<SecurityException> ex)
@@ -90,7 +92,8 @@ namespace DomainController
                 try
                 {
                     Console.WriteLine("Domain controller: Sending session key to the service...");
-                    serviceProxy.SendSessionKey(_3DESAlgorithm.Encrypt(key, Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService]));
+                    byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
+                    serviceProxy.SendSessionKey(_3DESAlgorithm.Encrypt(key, pwHash));
                 }
                 catch (FaultException<SecurityException> ex)
                 {
@@ -150,7 +153,7 @@ namespace DomainController
             string sessionId = OperationContext.Current.SessionId;
             Database.usersRequestsDB.Add(sessionId, new UserRequest());
             Database.usersRequestsDB[sessionId].Username = serviceName;
-            using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
+            using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
                 {
@@ -178,19 +181,19 @@ namespace DomainController
         public bool SendResponseService(byte[] response)
         {
             string sessionId = OperationContext.Current.SessionId;
-            if (!Database.usersRequestsDB.ContainsKey(sessionId))
+            UserRequest userRequest;
+            if (!Database.usersRequestsDB.TryGetValue(sessionId, out userRequest))
             {
                 throw new FaultException<SecurityException>(new SecurityException("Domain Controller: Session failed."));
             }
 
             bool authenticated = false;
             string svcFound;
-            using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
+            using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
                 {
-                    authenticated = authProxy.CheckPassword(Database.usersRequestsDB[sessionId].Username,
-                        Database.usersRequestsDB[sessionId].Challenge, response);
+                    authenticated = authProxy.CheckPassword(userRequest, response);
 
                 }
                 catch (FaultException<SecurityException> ex)

@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="AuthenticationService\AuthService.cs" />
     <Compile Include="AuthenticationService\IAuthenticationService.cs" />
+    <Compile Include="UserRequest.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="DomainController.cs" />
     <Compile Include="Program.cs" />
@@ -58,7 +59,6 @@
     <Compile Include="TicketGrantingService\DNSTable.cs" />
     <Compile Include="TicketGrantingService\ITicketGrantingService.cs" />
     <Compile Include="TicketGrantingService\TGService.cs" />
-    <Compile Include="UserRequest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

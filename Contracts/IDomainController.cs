@@ -20,7 +20,7 @@ namespace Contracts
         // return session key and address of the service
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        Tuple<byte[], string> SendResponse(byte[] response);
+        ClientSessionData SendResponse(byte[] response);
 
     }
 

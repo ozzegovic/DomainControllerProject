@@ -38,7 +38,7 @@ namespace Client.Proxy
            
         }
 
-        public ClientSessionData SendResponse(string username, byte[] response)
+        public ClientSessionData SendResponse(byte[] response)
         {
             try
             {

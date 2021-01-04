@@ -16,10 +16,10 @@ namespace Contracts.Cryptography
             sha256 = SHA256.Create();
         }
 
-        public byte[] Encrypt(string key, short salt)
+        public byte[] Encrypt(byte[] key, short salt)
         {
-            string value = key + salt.ToString();
-            byte[] response = sha256.ComputeHash(ASCIIEncoding.ASCII.GetBytes(value));
+            byte[] value = key.Concat(BitConverter.GetBytes(salt)).ToArray();
+            byte[] response = sha256.ComputeHash(value);
             return response;
         }
     }

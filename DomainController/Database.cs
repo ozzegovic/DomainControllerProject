@@ -13,22 +13,20 @@ namespace DomainController
         // save session data
         internal static Dictionary<string, UserRequest> usersRequestsDB = new Dictionary<string, UserRequest>();
 
-        internal static Dictionary<string, User> usersDB= new Dictionary<string, byte[]>();
+        internal static Dictionary<string, byte[]> usersDB = new Dictionary<string, byte[]>();
         static SHA256 sha256Hash = SHA256.Create();
 
         static Database()
         {
             string username;
             string pass;
-            User user;
 
             for (int i = 0; i < 10; i++)
             {
                 username = "username" + i;
                 pass = "password" + i;
-                user = new User(username, computeHash(pass).ToString());
 
-                usersDB.Add(username, user);
+                usersDB.Add(username, computeHash(pass));
             }
 
             // add service accounts
@@ -36,7 +34,7 @@ namespace DomainController
 
             byte[] computeHash(string password)
             {
-                return sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(password));
+                return sha256Hash.ComputeHash(Encoding.ASCII.GetBytes(password));
             }
 
         }

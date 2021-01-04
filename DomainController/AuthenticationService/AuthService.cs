@@ -19,14 +19,15 @@ namespace DomainController
         public short AuthenticateUser(string username)
         {
             short challenge;
-            User user = Database.usersDB[username];
 
-            if (user == null)
+            if (!Database.usersDB.ContainsKey(username))
+            {
                 throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: Username '{username}' not found"));
+            }
             else
             {
                 Console.WriteLine($"Authentication service: {username} found.");
-                short challenge = GenerateChallenge();
+                challenge = GenerateChallenge();
                 Console.WriteLine($"Authentication service: Sending challenge.");
                 return challenge;
             }
@@ -36,20 +37,20 @@ namespace DomainController
         // after receiving ''response'' from the client/service
         // encrypt the sent challenge with the stored password hash
         // if the received response and the encryption are the same, user authentication is complete
-        public bool CheckPassword(string username, short challenge, byte[] response)
+        public bool CheckPassword(UserRequest userRequest, byte[] response)
         {
-            User user = Database.usersDB[username];
-            if(user == null)
+            byte[] passHash;
+            if(!Database.usersDB.TryGetValue(userRequest.Username, out passHash))
             {
-                throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: Username '{username}' doesn't exist"));
+                throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: Username '{userRequest.Username}' doesn't exist"));
             }
 
             ChallengeResponse cr = new ChallengeResponse();
-            byte[] expected = cr.Encrypt(user.PasswordHash, user.LastChallenge);
+            byte[] expected = cr.Encrypt(passHash, userRequest.Challenge);
 
             if(Equals(expected, response))
             {
-                Console.WriteLine($"Authentication service: {username} authenticated.");
+                Console.WriteLine($"Authentication service: {userRequest.Username} authenticated.");
                 return true; 
             }
             else

@@ -1,4 +1,5 @@
 ﻿using Contracts;
+using Contracts.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,15 +32,18 @@ namespace Service
             string address = "net.tcp://localhost:9999/DomainControllerService";
             byte[] token = null;
 
+            string username = "DataManagementService";
+            string password = "pass";
+            byte[] pwBytes = Encoding.ASCII.GetBytes(password);
+            ChallengeResponse cr = new ChallengeResponse();
+
             try
             {
                 using (DCProxy proxy = new DCProxy(binding, address))
                 {
-
-                    short challenge = proxy.startAuthetication("DataManagementService");
-                    byte[] passwordHash = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes("pass"));
-
-                    byte[] response = _3DESAlgorithm.Encrypt(challenge.ToString(), passwordHash);
+                    byte[] key = sha256Hash.ComputeHash(pwBytes);
+                    short salt = proxy.startAuthetication(username);
+                    byte[] response = cr.Encrypt(key, salt);
 
                     bool success = proxy.SendResponseService(response);
                 }

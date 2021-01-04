@@ -31,14 +31,14 @@ namespace Client
             username = Console.ReadLine();
             Console.WriteLine("Enter password:");
             password = Console.ReadLine();
-            byte[] pwBytes = ASCIIEncoding.ASCII.GetBytes(password);
-            string key;
+            byte[] pwBytes = Encoding.ASCII.GetBytes(password);
+            byte[] key;
 
             try
             {
                 using (DCProxy proxy = new DCProxy(binding, address))
                 {
-                    key = sha256Hash.ComputeHash(pwBytes).ToString();
+                    key = sha256Hash.ComputeHash(pwBytes);
                     short salt = proxy.startAuthetication("username1", "DataManagementService");
                     byte[] response = cr.Encrypt(key, salt);
 
@@ -52,7 +52,7 @@ namespace Client
                 {
 
                     string data = "test";
-                    byte[] decryptedKey = _3DESAlgorithm.Decrypt(sessionData.SessionKey, ASCIIEncoding.ASCII.GetBytes(key));
+                    byte[] decryptedKey = _3DESAlgorithm.Decrypt(sessionData.SessionKey, key);
                     Console.WriteLine(BitConverter.ToString(decryptedKey));
                     byte[] encryptedData = _3DESAlgorithm.Encrypt(data, decryptedKey);
                     proxy.Read(encryptedData);
