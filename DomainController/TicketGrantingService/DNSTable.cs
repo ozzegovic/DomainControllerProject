@@ -11,11 +11,15 @@ namespace DomainController.TicketGrantingService
         // dnsTable contains all the supported services
 
         // TO DO: change dns table to IPAddress:Hostname
-        internal static Dictionary<string, string> dnsTable = new Dictionary<string, string>();
+        internal static Dictionary<string, Service> dnsTable = new Dictionary<string, Service>();
 
         static DNSTable()
         {
-            dnsTable.Add("DataManagementService", "net.tcp://localhost:9998");
+            string name0 = "wcfService";
+            string name1 = "wcfService1";
+
+            dnsTable.Add(name0, new Service(name0, "net.tcp://localhost:9900"));
+            dnsTable.Add(name1, new Service(name1, "net.tcp://localhost:9901"));
         }
     }
 }

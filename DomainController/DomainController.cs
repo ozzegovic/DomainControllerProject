@@ -17,9 +17,6 @@ namespace DomainController
         TGSProxy tgsProxy;
         ServiceProxy serviceProxy;
 
-        string serviceFound;
-
-        byte[] sessionKey;
         string key;
 
         // SendResponse: gets the response and then compares it to the stored hash in the database
@@ -53,19 +50,24 @@ namespace DomainController
                 }
             }
 
+            string serviceAddress;
+            string serviceName = Database.usersRequestsDB[sessionId].RequestedService;
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: User failed to authenticate."));
             else
             {
-                using (tgsProxy = new TGSProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10001/TGService"))
+                using (tgsProxy = new TGSProxy(new NetTcpBinding(), "net.tcp://localhost:10001/TGService"))
                 {
                     try
                     {
-                        serviceFound = tgsProxy.ServiceExists(Database.usersRequestsDB[sessionId].RequestedService);
-                        Console.WriteLine($"Ticket Granting Service: Requested {Database.usersRequestsDB[sessionId].RequestedService} found. Details: {serviceFound}.");
+                        serviceAddress = tgsProxy.GetServiceAddress(serviceName);
+                        Console.WriteLine($"Ticket Granting Service: Requested {serviceName} found. Address: {serviceAddress}.");
 
-                        serviceFound = tgsProxy.CheckOnlineService(serviceFound);
-                        Console.WriteLine($"Ticket Granting Service: {serviceFound} is active.");
+                        if (!tgsProxy.IsServiceOnline(serviceName))
+                        {
+                            throw new Exception($"Ticket Granting Service: {serviceName} is offline");
+                        }
+                        Console.WriteLine($"Ticket Granting Service: {serviceAddress} is active.");
 
                         Console.WriteLine("Ticket Granting Service: Generating session key ...");
                         key = tgsProxy.GenerateSessionKey();
@@ -87,13 +89,14 @@ namespace DomainController
                 }
             }
 
-            using (serviceProxy = new ServiceProxy(new NetTcpBinding(), serviceFound))
+            using (serviceProxy = new ServiceProxy(new NetTcpBinding(), serviceAddress))
             {
                 try
                 {
                     Console.WriteLine("Domain controller: Sending session key to the service...");
                     byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
-                    serviceProxy.SendSessionKey(_3DESAlgorithm.Encrypt(key, pwHash));
+                    string user = Database.usersRequestsDB[sessionId].Username;
+                    serviceProxy.SendSessionKey(user, _3DESAlgorithm.Encrypt(key, pwHash));
                 }
                 catch (FaultException<SecurityException> ex)
                 {
@@ -108,7 +111,7 @@ namespace DomainController
                 }
             }
             Console.WriteLine("Domain controller: Sending session key and service address to the client...");
-            return new ClientSessionData(Database.usersRequestsDB[sessionId].SessionKey, serviceFound);
+            return new ClientSessionData(Database.usersRequestsDB[sessionId].SessionKey, serviceAddress);
 
         }
 
@@ -123,7 +126,7 @@ namespace DomainController
             Database.usersRequestsDB[sessionId].RequestedService = service;
             Database.usersRequestsDB[sessionId].Username = username;
 
-            using (authProxy = new AuthProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
+            using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
                 {
@@ -178,7 +181,7 @@ namespace DomainController
         // service sends an encrypted response 
         // DC forwards it to AS for password validation
         // after confirmation, forward to TGS 
-        public bool SendResponseService(byte[] response)
+        public string SendResponseService(byte[] response)
         {
             string sessionId = OperationContext.Current.SessionId;
             UserRequest userRequest;
@@ -188,7 +191,6 @@ namespace DomainController
             }
 
             bool authenticated = false;
-            string svcFound;
             using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
@@ -210,23 +212,24 @@ namespace DomainController
                 }
             }
 
+            string serviceAddress;
+            string serviceName = Database.usersRequestsDB[sessionId].Username;
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: Service failed to authenticate."));
             else
             {
-                using (tgsProxy = new TGSProxy(new System.ServiceModel.NetTcpBinding(), "net.tcp://localhost:10001/TGService"))
+                using (tgsProxy = new TGSProxy(new NetTcpBinding(), "net.tcp://localhost:10001/TGService"))
                 {
                     try
                     {
-                        svcFound = tgsProxy.ServiceExists(Database.usersRequestsDB[sessionId].Username);
-                        Console.WriteLine($"Ticket Granting Service: Requested {Database.usersRequestsDB[sessionId].Username} found. Details: {svcFound}.");
+                        serviceAddress = tgsProxy.GetServiceAddress(serviceName);
+                        Console.WriteLine($"Ticket Granting Service: Requested {serviceName} found. Address: {serviceAddress}.");
 
-                        tgsProxy.AddOnlineService(svcFound);
-                        Console.WriteLine($"Ticket Granting Service: {svcFound} added to active services list.");
+                        tgsProxy.ActivateService(serviceName);
+                        Console.WriteLine($"Ticket Granting Service: {serviceName} activated.");
 
-                        // return authentication confirmation
-                        Console.WriteLine($"Ticket Granting Service: Sending confirmation to {svcFound}...");
-                        return true;
+                        Console.WriteLine($"Ticket Granting Service: Sending address to {serviceName}...");
+                        return serviceAddress;
                     }
                     catch (FaultException<SecurityException> ex)
                     {

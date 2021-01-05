@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="AuthenticationService\AuthService.cs" />
     <Compile Include="AuthenticationService\IAuthenticationService.cs" />
+    <Compile Include="TicketGrantingService\Service.cs" />
     <Compile Include="UserRequest.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="DomainController.cs" />
@@ -55,7 +56,6 @@
     <Compile Include="Proxy\AuthProxy.cs" />
     <Compile Include="Proxy\ServiceProxy.cs" />
     <Compile Include="Proxy\TGSProxy.cs" />
-    <Compile Include="TicketGrantingService\DNSActiveServices.cs" />
     <Compile Include="TicketGrantingService\DNSTable.cs" />
     <Compile Include="TicketGrantingService\ITicketGrantingService.cs" />
     <Compile Include="TicketGrantingService\TGService.cs" />

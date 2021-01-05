@@ -35,7 +35,7 @@ namespace Service
           
         }
 
-        public bool SendResponseService(byte[] response)
+        public string SendResponseService(byte[] response)
         {
             try
             {

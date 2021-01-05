@@ -20,11 +20,11 @@ namespace DomainController.Proxy
 
         // currently: checks if the service exists in the dnsTable and returns the full address
         // Client then uses this address to connect to the service
-        public string ServiceExists(string serviceAddress)
+        public string GetServiceAddress(string serviceAddress)
         {
             try
             {
-                return factory.ServiceExists(serviceAddress);
+                return factory.GetServiceAddress(serviceAddress);
             }
             catch (FaultException<SecurityException> ex)
             {
@@ -40,11 +40,11 @@ namespace DomainController.Proxy
         }
 
         // after service authentication, add it to the active services list
-        public bool AddOnlineService(string serviceAddress)
+        public bool ActivateService(string serviceName)
         {
             try
             {
-                return factory.AddOnlineService(serviceAddress);
+                return factory.ActivateService(serviceName);
             }
             catch (FaultException<SecurityException> ex)
             {
@@ -60,11 +60,11 @@ namespace DomainController.Proxy
         }
 
         //check if requested service is active
-        public string CheckOnlineService(string serviceAddress)
+        public bool IsServiceOnline(string serviceName)
         {
             try
             {
-                return factory.CheckOnlineService(serviceAddress);
+                return factory.IsServiceOnline(serviceName);
             }
             catch (FaultException<SecurityException> ex)
             {

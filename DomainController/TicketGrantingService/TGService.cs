@@ -14,39 +14,49 @@ namespace DomainController.TicketGrantingService
 
         // currently: checks if the service exists in the dnsTable and returns the full address
         // Client then uses this address to connect to the service
-        public string ServiceExists(string serviceAddress)
+        public string GetServiceAddress(string serviceName)
         {
-            if (!DNSTable.dnsTable.ContainsKey(serviceAddress))
+            if (!DNSTable.dnsTable.ContainsKey(serviceName))
             {
                 throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service not found."));
             }
             else
-                return DNSTable.dnsTable[serviceAddress] + "/" + serviceAddress;
+                return DNSTable.dnsTable[serviceName].Address + "/" + serviceName;
         }
 
-        // Add the service to the dnsActiveServices list
-        // TO DO: instad serviceAddress,true add serviceAddres, serviceIdentity
-        public bool AddOnlineService(string serviceAddress)
+        // Set service to active
+        public bool ActivateService(string serviceName)
         {
-            if (!DNSActiveServices.dnsActiveServices.ContainsKey(serviceAddress))
+            if (DNSTable.dnsTable.ContainsKey(serviceName))
             {
-                DNSActiveServices.dnsActiveServices.Add(serviceAddress, true);
-                return true;
+                if (DNSTable.dnsTable[serviceName].Active)
+                {
+                    throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service already online."));
+                }
+                else
+                {
+                    DNSTable.dnsTable[serviceName].Active = true;
+                    return true;
+                }
             }
             else
-                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service already online."));
+            {
+                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service not found."));
+            }
         }
 
 
         // checks if existing service is started
-        public string CheckOnlineService(string serviceAddress)
+        public bool IsServiceOnline(string serviceName)
         {
-            if (!DNSActiveServices.dnsActiveServices.ContainsKey(serviceAddress))
+            if (DNSTable.dnsTable.ContainsKey(serviceName))
             {
-                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service is not online."));
+                return DNSTable.dnsTable[serviceName].Active;
             }
             else
-                return serviceAddress;
+            {
+                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service not found."));
+            }
         }
 
         public string GenerateSessionKey()
@@ -55,7 +65,7 @@ namespace DomainController.TicketGrantingService
             byte[] key = new byte[24]; // For a 192-bit key
             rng.GetBytes(key);
 
-            return ASCIIEncoding.ASCII.GetString(key);
+            return Encoding.ASCII.GetString(key);
         }
     }
 }

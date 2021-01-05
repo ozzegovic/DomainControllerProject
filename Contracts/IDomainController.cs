@@ -33,10 +33,10 @@ namespace Contracts
         short startAuthetication(string serviceName);
 
         // compare the response with the service password from the database
-        // return true if authenticated, session key is sent only after there is an authenticated client
+        // return service address if found
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        bool SendResponseService(byte[] response);
+        string SendResponseService(byte[] response);
 
     }
 

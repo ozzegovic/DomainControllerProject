@@ -13,15 +13,15 @@ namespace DomainController.TicketGrantingService
     {
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        string ServiceExists(string serviceAddress);
+        string GetServiceAddress(string serviceAddress);
 
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        bool AddOnlineService(string serviceAddress);
+        bool ActivateService(string serviceAddress);
 
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        string CheckOnlineService(string serviceAddress);
+        bool IsServiceOnline(string serviceAddress);
 
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
