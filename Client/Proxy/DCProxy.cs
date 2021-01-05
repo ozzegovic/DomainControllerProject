@@ -28,12 +28,12 @@ namespace Client.Proxy
             catch (FaultException<SecurityException> e)
             {
                
-                throw new Exception("Failed:" + e.Detail.Message);
+                throw new Exception("Failed: " + e.Detail.Message);
             }
             catch (Exception e)
             {
                
-                throw new Exception("Failed:" + e.Message);
+                throw new Exception("Failed: " + e.Message);
             }
            
         }
@@ -47,12 +47,12 @@ namespace Client.Proxy
             catch (FaultException<SecurityException> e)
             {
                 
-                throw new Exception("Failed:" + e.Detail.Message);
+                throw new Exception("Failed: " + e.Detail.Message);
             }
             catch (Exception e)
             {
                
-                throw new Exception("Failed:" + e.Message);
+                throw new Exception("Failed: " + e.Message);
             }
             
         }
