@@ -14,10 +14,12 @@ namespace Contracts
     {
 
         [OperationContract]
-        bool Read(byte[] token);
+        [FaultContract(typeof(SecurityException))]
+        byte[] Read(byte[] key);
 
         [OperationContract]
-        bool Write(byte[] token);
+        [FaultContract(typeof(SecurityException))]
+        bool Write(byte[] key, byte[] value);
     }
 
     // available to DomainController
@@ -25,7 +27,7 @@ namespace Contracts
     public interface IDataManagementDC
     {
         [OperationContract]
-        bool SendSessionKey(byte[] sessionKey);
+        bool SendSessionKey(string user, byte[] encryptedSessionKey);
     }
 
 }

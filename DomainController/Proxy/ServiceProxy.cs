@@ -19,12 +19,12 @@ namespace DomainController
             factory = this.CreateChannel();
         }
 
-        public bool SendSessionKey(byte[] sessionKey)
+        public bool SendSessionKey(string user, byte[] encryptedSessionKey)
         {
 
             try
             {
-                factory.SendSessionKey(sessionKey);
+                factory.SendSessionKey(user, encryptedSessionKey);
                 return true;
             }
             catch (FaultException<SecurityException> e)

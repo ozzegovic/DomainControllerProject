@@ -2,6 +2,7 @@
 using Contracts.Cryptography;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.ServiceModel;
@@ -11,54 +12,92 @@ using System.Threading.Tasks;
 namespace Service
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
-    public class DataManagement : IDataManagement, IDataManagementDC
+    public class DataManagement : ServiceData, IDataManagement, IDataManagementDC
     {
-        byte[] key;
-        byte[] decryptedKey;
-        SHA256 sha256Hash = SHA256.Create();
+        private static Dictionary<string, byte[]> userSessions = new Dictionary<string, byte[]>();
+        private SHA256 sha256Hash = SHA256.Create();
 
-        // TO DO: Change return type to byte[]
         // decrypt request
         // read data from database
         // encrypt read values and send back to the client
-        public bool Read(byte[] encryptedData)
+        public byte[] Read(byte[] encryptedKey)
         {
             Console.WriteLine("Received encrypted READ request");
 
-            byte[] decryptedData = _3DESAlgorithm.Decrypt(encryptedData, decryptedKey);
-            Console.WriteLine($"DEcrypted key: {BitConverter.ToString(decryptedKey)}");
+            string[] identityData = ServiceSecurityContext.Current.WindowsIdentity.Name.Split('\\');
+            if(identityData.Count() != 2)
+            {
+                throw new Exception("Service error: Unable to parse username.");
+            }
 
-            Console.WriteLine($"DEcrypted data: {ASCIIEncoding.ASCII.GetString(decryptedData)}");
+            string user = identityData[1];
 
-            return true;
+            Console.WriteLine("User requesting the service: ");
+            Console.WriteLine(user);
+
+            byte[] sessionKey = GetSessionKey(user);
+
+            string key = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedKey, sessionKey)).Trim('\0');
+            string value = Database.Read(key);
+
+            byte[] encryptedValue = _3DESAlgorithm.Encrypt(value, sessionKey);
+
+            return encryptedValue;
         }
 
-        // TO DO: Change return type to byte[]
+        private byte[] GetSessionKey(string user)
+        {
+            if (userSessions.ContainsKey(user))
+            {
+                return userSessions[user];
+            }
+            else
+            {
+                throw new FaultException<SecurityException>(new SecurityException("Security error: Client-Service session not established."));
+            }
+        }
+
         // decrypt request
         // write data to the database
-        // encrypt data and send back to the client
-        public bool Write(byte[] encryptedData)
+        public bool Write(byte[] encryptedKey, byte[] encryptedValue)
         {
             Console.WriteLine("Received encrypted WRITE request");
 
-            byte[] decryptedData = _3DESAlgorithm.Decrypt(encryptedData, decryptedKey);
-            Console.WriteLine($"DEcrypted key: {BitConverter.ToString(decryptedKey)}");
+            string[] identityData = ServiceSecurityContext.Current.WindowsIdentity.Name.Split('\\');
+            if (identityData.Count() != 2)
+            {
+                throw new Exception("Service error: Unable to parse username.");
+            }
 
-            Console.WriteLine($"DEcrypted data: {ASCIIEncoding.ASCII.GetString(decryptedData)}");
+            string user = identityData[1];
+
+            Console.WriteLine("User requesting the service: ");
+            Console.WriteLine(user);
+
+            byte[] sessionKey = GetSessionKey(user);
+
+            string key = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedKey, sessionKey)).Trim('\0');
+            string value = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedValue, sessionKey)).Trim('\0');
+
+            Database.Write(key, value);
 
             return true;
         }
 
 
-        // Domain Controller sends session key after a client requested it
-        // TO DO: Domain controller can remove it from the active services list if it cannot connect/doesnt receive any answer
-        public bool SendSessionKey(byte[] sessionKey)
+        // Domain Controller sends session key after a client requested the service
+        // TODO: Domain controller can remove it from the active services list if it cannot connect/doesnt receive any answer
+        public bool SendSessionKey(string user, byte[] encryptedSessionKey)
         {
             Console.WriteLine("Received encrypted session key");
 
-            key = sha256Hash.ComputeHash(ASCIIEncoding.ASCII.GetBytes("pass"));
-            decryptedKey = _3DESAlgorithm.Decrypt(sessionKey, key);
-            Console.WriteLine($"DEcrypted key: {BitConverter.ToString(decryptedKey)}");
+            if(serviceSecret == null)
+            {
+                throw new Exception("Service error: service secret not set.");
+            }
+
+            byte[] sessionKey = _3DESAlgorithm.Decrypt(encryptedSessionKey, serviceSecret);
+            userSessions.Add(user, sessionKey);
 
             return true;
         }

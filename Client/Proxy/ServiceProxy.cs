@@ -17,24 +17,34 @@ namespace Client.Proxy
             factory = this.CreateChannel();
         }
 
-        public bool Read(byte[] encryptedData)
+        public byte[] Read(byte[] key)
         {
             try
             {
-                return factory.Read(encryptedData);
+                return factory.Read(key);
+            }
+            catch (FaultException<SecurityException> e)
+            {
+                Console.WriteLine("Security Error: {0}", e.Detail.Message);
+                return null;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error: {0}", e.Message);
-                return false;
+                return null;
             }
         }
 
-        public bool Write(byte[] encryptedData)
+        public bool Write(byte[] key, byte[] value)
         {
             try
             {
-                return factory.Write(encryptedData);
+                return factory.Write(key, value);
+            }
+            catch (FaultException<SecurityException> e)
+            {
+                Console.WriteLine("Security Error: {0}", e.Detail.Message);
+                return false;
             }
             catch (Exception e)
             {
