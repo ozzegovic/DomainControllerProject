@@ -9,8 +9,6 @@ namespace DomainController.TicketGrantingService
     public class DNSTable
     {
         // dnsTable contains all the supported services
-
-        // TO DO: change dns table to IPAddress:Hostname
         internal static Dictionary<string, Service> dnsTable = new Dictionary<string, Service>();
 
         static DNSTable()

@@ -86,7 +86,7 @@ namespace Service
 
 
         // Domain Controller sends session key after a client requested the service
-        // TODO: Domain controller can remove it from the active services list if it cannot connect/doesnt receive any answer
+        // TODO: Set service to offline if it disconnects
         public bool SendSessionKey(string user, byte[] encryptedSessionKey)
         {
             Console.WriteLine("Received encrypted session key");
