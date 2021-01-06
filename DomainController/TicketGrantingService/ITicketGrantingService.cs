@@ -21,6 +21,10 @@ namespace DomainController.TicketGrantingService
 
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
+        bool DeactivateService(string serviceAddress);
+
+        [OperationContract]
+        [FaultContract(typeof(SecurityException))]
         bool IsServiceOnline(string serviceAddress);
 
         [OperationContract]

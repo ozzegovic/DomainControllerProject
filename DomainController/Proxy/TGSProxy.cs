@@ -59,6 +59,26 @@ namespace DomainController.Proxy
             }
         }
 
+        
+        public bool DeactivateService(string serviceName)
+        {
+            try
+            {
+                return factory.DeactivateService(serviceName);
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
+
         //check if requested service is active
         public bool IsServiceOnline(string serviceName)
         {
