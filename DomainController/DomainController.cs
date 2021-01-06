@@ -67,7 +67,7 @@ namespace DomainController
 
                         if (!tgsProxy.IsServiceOnline(serviceName))
                         {
-                            throw new Exception($"Ticket Granting Service: {serviceName} is offline");
+                            throw new FaultException<SecurityException>(new SecurityException($"Ticket Granting Service: {serviceName} is offline"));
                         }
                         Console.WriteLine($"Ticket Granting Service: {serviceAddress} is active.");
 
@@ -191,7 +191,7 @@ namespace DomainController
         // service sends an encrypted response 
         // DC forwards it to AS for password validation
         // after confirmation, forward to TGS 
-        public string SendResponseService(byte[] response)
+        public bool SendResponseService(byte[] response)
         {
             string sessionId = OperationContext.Current.SessionId;
             UserRequest userRequest;
@@ -222,7 +222,6 @@ namespace DomainController
                 }
             }
 
-            string serviceAddress;
             string serviceName = Database.usersRequestsDB[sessionId].RequestedService;
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: Service failed to authenticate."));
@@ -232,14 +231,14 @@ namespace DomainController
                 {
                     try
                     {
-                        serviceAddress = tgsProxy.GetServiceAddress(serviceName);
+                        string serviceAddress = tgsProxy.GetServiceAddress(serviceName);
                         Console.WriteLine($"Ticket Granting Service: Requested {serviceName} found. Address: {serviceAddress}.");
 
                         tgsProxy.ActivateService(serviceName);
                         Console.WriteLine($"Ticket Granting Service: {serviceName} activated.");
 
                         Console.WriteLine($"Ticket Granting Service: Sending address to {serviceName}...");
-                        return serviceAddress;
+                        return true;
                     }
                     catch (FaultException<SecurityException> ex)
                     {

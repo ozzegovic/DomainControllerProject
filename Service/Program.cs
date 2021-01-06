@@ -23,7 +23,7 @@ namespace Service
             binding.Security.Mode = SecurityMode.Transport;
             binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
             binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
-            string address = $"net.tcp://localhost:9999/DomainControllerService";
+            string address = "net.tcp://localhost:9999/DomainControllerService";
             EndpointAddress endpointAddressDC = new EndpointAddress(new Uri(address), EndpointIdentity.CreateUpnIdentity("DomainController"));
 
 
@@ -31,13 +31,32 @@ namespace Service
             Console.WriteLine("Logging in as " + username);
             Console.WriteLine("Enter service name:"); //which service to start
             string serviceName = Console.ReadLine();
+
+            // this is only needed for testing since every service instance is run on localhost
+            // in production every service instance should have it's unique address
+            short port;
+            switch (username)
+            {
+                case "wcfService":
+                    port = 9900;
+                    break;
+                case "wcfService1":
+                    port = 9901;
+                    break;
+                default:
+                    port = 9902;
+                    break;
+            }
+
+            string addressClient = $"net.tcp://localhost:{port}/" + serviceName;
+
             Console.WriteLine("Enter password");
             string password = Console.ReadLine();
 
             byte[] pwBytes = Encoding.ASCII.GetBytes(password);
             ChallengeResponse cr = new ChallengeResponse();
 
-            string addressClient = string.Empty;
+            bool successful = false;
 
             try
             {
@@ -47,7 +66,7 @@ namespace Service
                     short salt = proxy.StartServiceAuthentication(serviceName);
                     byte[] response = cr.Encrypt(serviceSecret, salt);
 
-                    addressClient = proxy.SendResponseService(response);
+                    successful = proxy.SendResponseService(response);
                 }
             }
             catch(Exception e)
@@ -55,7 +74,7 @@ namespace Service
                 Console.WriteLine(e.Message);
             }
 
-            if (addressClient != string.Empty)
+            if (successful)
             {
                 Database.Load(username);
             }
@@ -66,6 +85,8 @@ namespace Service
                 Console.ReadLine();
                 return;
             }
+
+            Console.WriteLine("Starting service...");
 
             // connection with the client
             NetTcpBinding bindingClient = new NetTcpBinding();
@@ -78,7 +99,7 @@ namespace Service
             serviceHost.AddServiceEndpoint(typeof(IDataManagementDC), bindingClient, addressClient);
             serviceHost.Open();
 
-            Console.WriteLine(username + " started...");
+            Console.WriteLine($"Service {serviceName} started. Press return to exit.");
 
             Console.ReadLine();
 

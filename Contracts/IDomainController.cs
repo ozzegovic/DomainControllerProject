@@ -36,7 +36,7 @@ namespace Contracts
         // return service address if found
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        string SendResponseService(byte[] response);
+        bool SendResponseService(byte[] response);
 
     }
 
