@@ -44,7 +44,26 @@ namespace DomainController.TicketGrantingService
                 throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service not found."));
             }
         }
-
+        
+        public bool DeactivateService(string serviceName)
+        {
+            if (DNSTable.dnsTable.ContainsKey(serviceName))
+            {
+                if (!DNSTable.dnsTable[serviceName].Active)
+                {
+                    throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service already offline."));
+                }
+                else
+                {
+                    DNSTable.dnsTable[serviceName].Active = false;
+                    return true;
+                }
+            }
+            else
+            {
+                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service not found."));
+            }
+        }
 
         // checks if existing service is started
         public bool IsServiceOnline(string serviceName)

@@ -90,7 +90,7 @@ namespace DomainController
                     }
                 }
             }
-
+            bool keySent = false;
             using (serviceProxy = new ServiceProxy(new NetTcpBinding(), serviceAddress))
             {
                 try
@@ -98,7 +98,7 @@ namespace DomainController
                     Console.WriteLine("Domain controller: Sending session key to the service...");
                     byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
                     string user = Database.usersRequestsDB[sessionId].Username;
-                    serviceProxy.SendSessionKey(user, _3DESAlgorithm.Encrypt(key, pwHash));
+                    keySent = serviceProxy.SendSessionKey(user, _3DESAlgorithm.Encrypt(key, pwHash));
                 }
                 catch (FaultException<SecurityException> ex)
                 {
@@ -106,15 +106,50 @@ namespace DomainController
                     throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
 
                 }
+                catch (CommunicationException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    serviceProxy.Abort();
+                }
+
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                     throw new Exception(ex.Message);
                 }
-            }
-            Console.WriteLine("Domain controller: Sending session key and service address to the client...");
-            return new ClientSessionData(Database.usersRequestsDB[sessionId].SessionKey, serviceAddress);
 
+            }
+
+            if (keySent)
+            {
+                Console.WriteLine("Domain controller: Sending session key and service address to the client...");
+                return new ClientSessionData(Database.usersRequestsDB[sessionId].SessionKey, serviceAddress);
+            }
+            else
+            {
+                using (tgsProxy = new TGSProxy(new NetTcpBinding(), "net.tcp://localhost:10001/TGService"))
+                {
+                    try
+                    {
+                        Console.WriteLine($"Domain controller: Deactivating {serviceName} service...");
+                        tgsProxy.DeactivateService(serviceName);
+
+                    }
+                    catch (FaultException<SecurityException> ex)
+                    {
+                        Console.WriteLine(ex.Detail.Message);
+                        throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        throw new Exception(ex.Message);
+                    }
+
+                }
+            }
+            throw new FaultException<SecurityException>(new SecurityException("Domain controller: Service not active."));
         }
 
         // client authentication

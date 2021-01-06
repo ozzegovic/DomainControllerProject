@@ -33,10 +33,15 @@ namespace DomainController
                 throw new FaultException<SecurityException>(new SecurityException(e.Detail.Message));
 
             }
+            catch (CommunicationException e)
+            {
+
+                throw new CommunicationException("Could not connect to service.");
+            }
             catch (Exception e)
             {
 
-                throw new FaultException<SecurityException>(new SecurityException(e.Message));
+                throw new Exception(e.Message);
             }
         }
     }
