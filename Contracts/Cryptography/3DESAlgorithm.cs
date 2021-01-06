@@ -14,6 +14,11 @@ namespace Contracts.Cryptography
 
         public static byte[] Encrypt(string plaintext, byte[] secretKey)
         {
+            if (string.IsNullOrEmpty(plaintext))
+            {
+                return null;
+            }
+
             var secretkey = secretKey;//initialization
             if (secretKey.Length == 32)
             {
@@ -50,6 +55,11 @@ namespace Contracts.Cryptography
 
         public static byte[] Decrypt(byte[] input, byte[] secretKey)
         {
+            if(input == null || input.Length == 0)
+            {
+                return null;
+            }
+
             var secretkey = secretKey;//initialization
             if (secretKey.Length == 32)
             {
