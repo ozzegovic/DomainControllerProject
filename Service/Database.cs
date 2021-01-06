@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Contracts;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -95,12 +97,12 @@ namespace Service
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new Exception("Data management error: Key cannot be null, empty, or whitespace");
+                throw new FaultException<DataException>(new DataException("Key cannot be null, empty, or whitespace"));
             }
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new Exception("Data management error: Value cannot be null, empty, or whitespace");
+                throw new FaultException<DataException>(new DataException("Value cannot be null, empty, or whitespace"));
             }
 
             if (Data.ContainsKey(key))
@@ -116,7 +118,7 @@ namespace Service
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new Exception("Data management error: Key cannot be null, empty, or whitespace");
+                throw new FaultException<DataException>(new DataException("Key cannot be null, empty, or whitespace"));
             }
 
             if (Data.ContainsKey(key))
@@ -125,11 +127,11 @@ namespace Service
             }
             else
             {
-                throw new Exception("Data management error: Key doesn't exist in database.");
+                throw new FaultException<DataException>(new DataException("Key doesn't exist in database."));
             }
         }
 
-        // Generates path to C:\Documents and Settings\%USER NAME%\Application Data\DataManagement\
+        // Generates full path to .exe directory
         private static string GetFilePath(string serviceName)
         {
             string path = AppDomain.CurrentDomain.BaseDirectory + serviceName + ".txt";

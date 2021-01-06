@@ -23,9 +23,9 @@ namespace Client.Proxy
             {
                 return factory.Read(key);
             }
-            catch (FaultException<SecurityException> e)
+            catch (FaultException<DataException> e)
             {
-                Console.WriteLine("Security Error: {0}", e.Detail.Message);
+                Console.WriteLine("Data Error: {0}", e.Detail.Message);
                 return null;
             }
             catch (Exception e)
@@ -41,9 +41,9 @@ namespace Client.Proxy
             {
                 return factory.Write(key, value);
             }
-            catch (FaultException<SecurityException> e)
+            catch (FaultException<DataException> e)
             {
-                Console.WriteLine("Security Error: {0}", e.Detail.Message);
+                Console.WriteLine("Data Error: {0}", e.Detail.Message);
                 return false;
             }
             catch (Exception e)
