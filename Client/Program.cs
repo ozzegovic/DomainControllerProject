@@ -19,6 +19,11 @@ namespace Client
         {
             NetTcpBinding binding = new NetTcpBinding();
             string address = "net.tcp://localhost:9999/DomainControllerClient";
+            binding.Security.Mode = SecurityMode.Transport;
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+            EndpointAddress endpointAddressDC = new EndpointAddress(new Uri(address), EndpointIdentity.CreateUpnIdentity("DomainController"));
+
             SHA256 sha256Hash = SHA256.Create();
             ChallengeResponse cr = new ChallengeResponse();
             ClientSessionData sessionData;
@@ -38,11 +43,11 @@ namespace Client
 
             try
             {
-                using (DCProxy proxy = new DCProxy(binding, address))
+                using (DCProxy proxy = new DCProxy(binding, endpointAddressDC))
                 {
                     secret = sha256Hash.ComputeHash(pwBytes);
 
-                    short salt = proxy.startAuthetication(username, serviceName);
+                    short salt = proxy.StartClientAuthentication(serviceName);
                     byte[] response = cr.Encrypt(secret, salt);
 
                     sessionData = proxy.SendResponse(response);

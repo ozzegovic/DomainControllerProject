@@ -17,12 +17,16 @@ namespace Client.Proxy
         {
             factory = this.CreateChannel();
         }
+        public DCProxy(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
+        {
 
-        public short startAuthetication(string username, string service)
+            factory = this.CreateChannel();
+        }
+        public short StartClientAuthentication(string service)
         {
             try
             {
-                return factory.startAuthetication(username, service);
+                return factory.StartClientAuthentication(service);
             }
 
             catch (FaultException<SecurityException> e)

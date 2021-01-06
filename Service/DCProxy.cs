@@ -16,13 +16,16 @@ namespace Service
         {
             factory = this.CreateChannel();
         }
+        public DCProxy(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
+        {
+            factory = this.CreateChannel();
+        }
 
-
-        public short startAuthetication(string serviceName)
+        public short StartServiceAuthentication(string serviceName)
         {
             try
             {
-                return factory.startAuthetication(serviceName);
+                return factory.StartServiceAuthentication(serviceName);
             }
             catch (FaultException<SecurityException> e)
             {

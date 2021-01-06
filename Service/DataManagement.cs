@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Service
@@ -23,14 +25,10 @@ namespace Service
         public byte[] Read(byte[] encryptedKey)
         {
             Console.WriteLine("Received encrypted READ request");
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
 
-            string[] identityData = ServiceSecurityContext.Current.WindowsIdentity.Name.Split('\\');
-            if(identityData.Count() != 2)
-            {
-                throw new Exception("Service error: Unable to parse username.");
-            }
-
-            string user = identityData[1];
+            string user = Formatter.ParseName(windowsIdentity.Name);
 
             Console.WriteLine("User requesting the service: ");
             Console.WriteLine(user);
@@ -63,13 +61,10 @@ namespace Service
         {
             Console.WriteLine("Received encrypted WRITE request");
 
-            string[] identityData = ServiceSecurityContext.Current.WindowsIdentity.Name.Split('\\');
-            if (identityData.Count() != 2)
-            {
-                throw new Exception("Service error: Unable to parse username.");
-            }
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
 
-            string user = identityData[1];
+            string user = Formatter.ParseName(windowsIdentity.Name);
 
             Console.WriteLine("User requesting the service: ");
             Console.WriteLine(user);

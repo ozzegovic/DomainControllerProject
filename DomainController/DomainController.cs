@@ -5,8 +5,10 @@ using DomainController.Proxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 
 namespace DomainController
 {
@@ -117,20 +119,23 @@ namespace DomainController
 
         // client authentication
         // start challenge response protocol if username exists
-        public short startAuthetication(string username, string service)
+        public short StartClientAuthentication(string service)
         {
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
 
             string sessionId = OperationContext.Current.SessionId;
             Database.usersRequestsDB.Add(sessionId, new UserRequest());
             //save requested service
             Database.usersRequestsDB[sessionId].RequestedService = service;
-            Database.usersRequestsDB[sessionId].Username = username;
+            Database.usersRequestsDB[sessionId].Username = Formatter.ParseName(windowsIdentity.Name);
 
             using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
                 {
-                    Database.usersRequestsDB[sessionId].Challenge = authProxy.AuthenticateUser(username);
+                    Database.usersRequestsDB[sessionId].Challenge = authProxy.AuthenticateUser(Database.usersRequestsDB[sessionId].Username);
                     return Database.usersRequestsDB[sessionId].Challenge;
                 }
                 catch (FaultException<SecurityException> ex)
@@ -151,11 +156,16 @@ namespace DomainController
         // challenge response protocol
         // check if service account exists
         // return challenge if exists
-        public short startAuthetication(string serviceName)
+        public short StartServiceAuthentication(string serviceName)
         {
+            IIdentity identity = Thread.CurrentPrincipal.Identity;
+            WindowsIdentity windowsIdentity = identity as WindowsIdentity;
+
             string sessionId = OperationContext.Current.SessionId;
             Database.usersRequestsDB.Add(sessionId, new UserRequest());
-            Database.usersRequestsDB[sessionId].Username = serviceName;
+            Database.usersRequestsDB[sessionId].Username = Formatter.ParseName(windowsIdentity.Name);
+
+            Database.usersRequestsDB[sessionId].RequestedService = serviceName;
             using (authProxy = new AuthProxy(new NetTcpBinding(), "net.tcp://localhost:10000/AuthService"))
             {
                 try
@@ -213,7 +223,7 @@ namespace DomainController
             }
 
             string serviceAddress;
-            string serviceName = Database.usersRequestsDB[sessionId].Username;
+            string serviceName = Database.usersRequestsDB[sessionId].RequestedService;
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: Service failed to authenticate."));
             else

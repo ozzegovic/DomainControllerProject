@@ -14,7 +14,7 @@ namespace Contracts
         //if user exists, return challenge
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        short startAuthetication(string username, string service);
+        short StartClientAuthentication(string service);
 
         // compare the response with the user password from the database
         // return session key and address of the service
@@ -30,7 +30,7 @@ namespace Contracts
         // if service exists, return challenge
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        short startAuthetication(string serviceName);
+        short StartServiceAuthentication(string serviceName);
 
         // compare the response with the service password from the database
         // return service address if found

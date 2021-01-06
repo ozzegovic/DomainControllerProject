@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Cryptography\3DESAlgorithm.cs" />
     <Compile Include="Cryptography\ChallengeResponse.cs" />
+    <Compile Include="Formatter.cs" />
     <Compile Include="IDataManagement.cs" />
     <Compile Include="IDomainController.cs" />
     <Compile Include="Models\ClientSessionData.cs" />

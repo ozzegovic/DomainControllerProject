@@ -16,6 +16,10 @@ namespace DomainController
         {
             // communication protocol
             NetTcpBinding binding = new NetTcpBinding();
+            binding.Security.Mode = SecurityMode.Transport;
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
             string address = "net.tcp://localhost:9999/DomainControllerClient";
             string addressService = "net.tcp://localhost:9999/DomainControllerService";
 
