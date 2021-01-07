@@ -91,12 +91,14 @@ namespace DomainController
                 }
             }
             bool keySent = false;
-            using (serviceProxy = new ServiceProxy(new NetTcpBinding(), serviceAddress))
+            EndpointAddress endpointAddressService = new EndpointAddress(new Uri(serviceAddress), EndpointIdentity.CreateUpnIdentity(serviceName));
+
+            using (serviceProxy = new ServiceProxy(new NetTcpBinding(), endpointAddressService))
             {
                 try
                 {
                     Console.WriteLine("Domain controller: Sending session key to the service...");
-                    byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
+                    byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].Username];
                     string user = Database.usersRequestsDB[sessionId].Username;
                     keySent = serviceProxy.SendSessionKey(user, _3DESAlgorithm.Encrypt(key, pwHash));
                 }
@@ -257,7 +259,7 @@ namespace DomainController
                 }
             }
 
-            string serviceName = Database.usersRequestsDB[sessionId].RequestedService;
+            
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: Service failed to authenticate."));
             else
@@ -266,13 +268,18 @@ namespace DomainController
                 {
                     try
                     {
-                        string serviceAddress = tgsProxy.GetServiceAddress(serviceName);
-                        Console.WriteLine($"Ticket Granting Service: Requested {serviceName} found. Address: {serviceAddress}.");
+                        string serviceAddress = tgsProxy.GetServiceAddress(userRequest.RequestedService);
+                        Console.WriteLine($"Ticket Granting Service: Requested {userRequest.RequestedService} found. Address: {serviceAddress}.");
 
-                        tgsProxy.ActivateService(serviceName);
-                        Console.WriteLine($"Ticket Granting Service: {serviceName} activated.");
+                        if(tgsProxy.IsServiceOnline(userRequest.RequestedService))
+                        {
+                            return true;
+                        }
 
-                        Console.WriteLine($"Ticket Granting Service: Sending address to {serviceName}...");
+                        tgsProxy.ActivateService(userRequest.RequestedService);
+                        Console.WriteLine($"Ticket Granting Service: {userRequest.RequestedService} activated.");
+
+                        Console.WriteLine($"Ticket Granting Service: Sending confirmation to {serviceAddress}...");
                         return true;
                     }
                     catch (FaultException<SecurityException> ex)
@@ -280,6 +287,11 @@ namespace DomainController
                         Console.WriteLine(ex.Detail.Message);
                         throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
 
+                    }
+                    catch(CommunicationException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        throw new FaultException<SecurityException>(new SecurityException(ex.Message));
                     }
                     catch (Exception ex)
                     {

@@ -95,12 +95,12 @@ namespace Service
 
         public static void Write(string key, string value)
         {
-            if (string.IsNullOrWhiteSpace(key))
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrEmpty(key))
             {
                 throw new FaultException<DataException>(new DataException("Key cannot be null, empty, or whitespace"));
             }
 
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value) || string.IsNullOrEmpty(value))
             {
                 throw new FaultException<DataException>(new DataException("Value cannot be null, empty, or whitespace"));
             }

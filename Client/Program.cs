@@ -64,62 +64,77 @@ namespace Client
 
             NetTcpBinding bindingService = new NetTcpBinding();
 
-            using (ServiceProxy proxy = new ServiceProxy(bindingService, sessionData.ServiceAddress))
+            try
             {
-                char c;
-                string key;
-                byte[] encryptedKey;
-                string value;
-                byte[] encryptedValue;
-                byte[] sessionKey = _3DESAlgorithm.Decrypt(sessionData.SessionKey, secret);
-
-                do
+                using (ServiceProxy proxy = new ServiceProxy(bindingService, sessionData.ServiceAddress))
                 {
-                    Console.WriteLine("Choose an action:");
-                    Console.WriteLine("\t- 'w' to write");
-                    Console.WriteLine("\t- 'r' to read");
-                    Console.WriteLine("\t- 'x' to exit");
-                    c = char.ToLower(Console.ReadKey().KeyChar);
-                    Console.WriteLine();
+                    char c;
+                    string key;
+                    byte[] encryptedKey;
+                    string value;
+                    byte[] encryptedValue;
+                    byte[] sessionKey = _3DESAlgorithm.Decrypt(sessionData.SessionKey, secret);
 
-                    switch (c)
+                    do
                     {
-                        case 'r':
-                            Console.WriteLine("Key of value to read:");
-                            key = Console.ReadLine();
+                        Console.WriteLine("Choose an action:");
+                        Console.WriteLine("\t- 'w' to write");
+                        Console.WriteLine("\t- 'r' to read");
+                        Console.WriteLine("\t- 'x' to exit");
+                        c = char.ToLower(Console.ReadKey().KeyChar);
+                        Console.WriteLine();
 
-                            Console.WriteLine("Encrypting and sending READ request...");
-                            encryptedKey = _3DESAlgorithm.Encrypt(key, sessionKey);
-                            encryptedValue = proxy.Read(encryptedKey);
-                            if (encryptedValue == null)
-                            {
+                        switch (c)
+                        {
+                            case 'r':
+                                Console.WriteLine("Key of value to read:");
+                                key = Console.ReadLine();
+
+                                Console.WriteLine("Encrypting and sending READ request...");
+                                encryptedKey = _3DESAlgorithm.Encrypt(key, sessionKey);
+                                encryptedValue = proxy.Read(encryptedKey);
+                                if (encryptedValue == null)
+                                {
+                                    break;
+                                }
+                                value = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedValue, sessionKey));
+                                Console.WriteLine("Received value: " + value);
                                 break;
-                            }
-                            value = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedValue, sessionKey));
-                            Console.WriteLine("Receaved value: " + value);
-                            break;
 
-                        case 'w':
-                            Console.WriteLine("Key of value to write:");
-                            key = Console.ReadLine();
-                            Console.WriteLine("Value to write:");
-                            value = Console.ReadLine();
+                            case 'w':
+                                Console.WriteLine("Key of value to write:");
+                                key = Console.ReadLine();
+                                Console.WriteLine("Value to write:");
+                                value = Console.ReadLine();
 
-                            Console.WriteLine("Encrypting and sending WRITE request...");
-                            encryptedKey = _3DESAlgorithm.Encrypt(key, sessionKey);
-                            encryptedValue = _3DESAlgorithm.Encrypt(value, sessionKey);
-                            if (proxy.Write(encryptedKey, encryptedValue))
-                            {
-                                Console.WriteLine("Value written successfully.");
-                            }
-                            break;
+                                Console.WriteLine("Encrypting and sending WRITE request...");
+                                encryptedKey = _3DESAlgorithm.Encrypt(key, sessionKey);
+                                encryptedValue = _3DESAlgorithm.Encrypt(value, sessionKey);
+                                if (proxy.Write(encryptedKey, encryptedValue))
+                                {
+                                    Console.WriteLine("Value written successfully.");
+                                }
+                                break;
 
-                        default:
-                            break;
-                    }
+                            default:
+                                break;
+                        }
 
-                } while (c != 'x');
+                    } while (c != 'x');
+                }
             }
+            catch (CommunicationException e)
+            {
+                Console.WriteLine($"Communication error. Please restart. ");
+                Console.ReadLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+                Console.WriteLine("Please restart.");
+                Console.ReadLine();
+            }
+
         }
     }
 }

@@ -18,7 +18,10 @@ namespace DomainController
         {
             factory = this.CreateChannel();
         }
-
+        public ServiceProxy(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
+        {
+            factory = this.CreateChannel();
+        }
         public bool SendSessionKey(string user, byte[] encryptedSessionKey)
         {
 

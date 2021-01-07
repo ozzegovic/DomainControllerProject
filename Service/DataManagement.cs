@@ -34,13 +34,36 @@ namespace Service
             Console.WriteLine(user);
 
             byte[] sessionKey = GetSessionKey(user);
+            string key;
+            try
+            {
+                key = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedKey, sessionKey)).Trim('\0');
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Data Error: {0}", e.Message);
+                throw new FaultException<DataException>(new DataException("Data Error: Key cannot be  null, empty, or whitespace"));
+            }
+            try
+            {
+                string value = Database.Read(key);
 
-            string key = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedKey, sessionKey)).Trim('\0');
-            string value = Database.Read(key);
+                byte[] encryptedValue = _3DESAlgorithm.Encrypt(value, sessionKey);
 
-            byte[] encryptedValue = _3DESAlgorithm.Encrypt(value, sessionKey);
+                return encryptedValue;
+            }
+            catch (FaultException<DataException> e)
+            {
+                Console.WriteLine("Data Error: {0}", e.Detail.Message);
+                throw new FaultException<DataException>(new DataException(e.Detail.Message));
+            }
 
-            return encryptedValue;
+            catch (Exception e)
+            {
+
+                throw new FaultException<DataException>(new DataException(e.Message));
+            }
+
         }
 
         private byte[] GetSessionKey(string user)
@@ -70,13 +93,35 @@ namespace Service
             Console.WriteLine(user);
 
             byte[] sessionKey = GetSessionKey(user);
+            string key;
+            string value;
+            try
+            {
+                 key = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedKey, sessionKey)).Trim('\0');
+                 value = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedValue, sessionKey)).Trim('\0');
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Data Error: {0}", e.Message);
+                throw new FaultException<DataException>(new DataException("Data Error: Key/Value cannot be  null, empty, or whitespace"));
+            }
+            try
+            {
+                
+                Database.Write(key, value);
+                return true;
+            }
+            catch (FaultException<DataException> e)
+            {
+                Console.WriteLine("Data Error: {0}", e.Detail.Message);
+                throw new FaultException<DataException>(new DataException(e.Detail.Message));
+            }
 
-            string key = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedKey, sessionKey)).Trim('\0');
-            string value = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedValue, sessionKey)).Trim('\0');
-
-            Database.Write(key, value);
-
-            return true;
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: {0}", e.Message);
+                throw new FaultException<DataException>(new DataException(e.Message));
+            }
         }
 
 
@@ -92,9 +137,18 @@ namespace Service
             }
 
             byte[] sessionKey = _3DESAlgorithm.Decrypt(encryptedSessionKey, serviceSecret);
-            userSessions.Add(user, sessionKey);
-
-            return true;
+            if (userSessions.ContainsKey(user))
+            {
+                userSessions[user] = sessionKey;
+                Console.WriteLine("Updated user session key.");
+                return true;
+            }
+            else
+            {
+                userSessions.Add(user, sessionKey);
+                Console.WriteLine("Saved user session key.");
+                return true;
+            }
         }
     }
 }

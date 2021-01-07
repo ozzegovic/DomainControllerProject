@@ -28,10 +28,14 @@ namespace Client.Proxy
                 Console.WriteLine("Data Error: {0}", e.Detail.Message);
                 return null;
             }
+            catch (CommunicationException e)
+            {
+                throw new Exception($"Communication error: {e.Message}");
+            }
+
             catch (Exception e)
             {
-                Console.WriteLine("Error: {0}", e.Message);
-                return null;
+                throw new Exception($"Error: {e.Message}");
             }
         }
 
@@ -46,10 +50,14 @@ namespace Client.Proxy
                 Console.WriteLine("Data Error: {0}", e.Detail.Message);
                 return false;
             }
+            catch (CommunicationException e)
+            {
+                throw new Exception($"Communication error: {e.Message}");
+            }
+
             catch (Exception e)
             {
-                Console.WriteLine("Error: {0}", e.Message);
-                return false;
+                throw new Exception($"Error: {e.Message}");
             }
         }
 
