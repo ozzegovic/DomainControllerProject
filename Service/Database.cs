@@ -26,40 +26,43 @@ namespace Service
                 return;
             }
 
-            using (TextReader tr = new StreamReader(filename))
+            lock (Data)
             {
-                Console.WriteLine("Loading database...");
-
-                string line;
-                int count = 0;
-                while ((line = tr.ReadLine()) != null)
+                using (TextReader tr = new StreamReader(filename))
                 {
-                    count++;
-                    string[] parts = line.Split(':');
+                    Console.WriteLine("Loading database...");
 
-                    // when using || operator in an if statement, if the first value is true, other values aren't checked
-                    if(parts.Count() != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+                    string line;
+                    int count = 0;
+                    while ((line = tr.ReadLine()) != null)
                     {
-                        Console.WriteLine($"Error parsing line {count}, skipping...");
-                        continue;
+                        count++;
+                        string[] parts = line.Split(':');
+
+                        // when using || operator in an if statement, if the first value is true, other values aren't checked
+                        if (parts.Count() != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+                        {
+                            Console.WriteLine($"Error parsing line {count}, skipping...");
+                            continue;
+                        }
+
+                        if (Data.ContainsKey(parts[0]))
+                        {
+                            Console.WriteLine($"Key from line {count} already loaded, skipping...");
+                            continue;
+                        }
+
+                        Data.Add(parts[0].Trim(), parts[1].Trim());
                     }
 
-                    if (Data.ContainsKey(parts[0]))
+                    if (Data.Count == 0)
                     {
-                        Console.WriteLine($"Key from line {count} already loaded, skipping...");
-                        continue;
+                        Console.WriteLine("Database empty.");
                     }
-
-                    Data.Add(parts[0].Trim(), parts[1].Trim());
-                }
-
-                if(Data.Count == 0)
-                {
-                    Console.WriteLine("Database empty.");
-                }
-                else
-                {
-                    Console.WriteLine("Database loaded.");
+                    else
+                    {
+                        Console.WriteLine("Database loaded.");
+                    }
                 }
             }
         }
@@ -67,30 +70,33 @@ namespace Service
         // File is cleared (truncated) before saving new data
         internal static void Save(string serviceName)
         {
-            if(Data.Count == 0)
+            lock (Data)
             {
-                Console.WriteLine("No data, skipping save...");
-            }
-
-            string filename = GetFilePath(serviceName);
-
-            if (!File.Exists(filename))
-            {
-                Console.WriteLine("Database doesn't exist, creating...");
-                File.Create(filename);
-                Console.WriteLine("Database created.");
-            }
-
-            Console.WriteLine("Saving data...");
-            FileInfo fi = new FileInfo(filename);
-            using (TextWriter tw = new StreamWriter(fi.Open(FileMode.Truncate)))
-            {
-                foreach(var pair in Data)
+                if (Data.Count == 0)
                 {
-                    tw.WriteLine(pair.Key + ":" + pair.Value);
+                    Console.WriteLine("No data, skipping save...");
                 }
+
+                string filename = GetFilePath(serviceName);
+
+                if (!File.Exists(filename))
+                {
+                    Console.WriteLine("Database doesn't exist, creating...");
+                    File.Create(filename);
+                    Console.WriteLine("Database created.");
+                }
+
+                Console.WriteLine("Saving data...");
+                FileInfo fi = new FileInfo(filename);
+                using (TextWriter tw = new StreamWriter(fi.Open(FileMode.Truncate)))
+                {
+                    foreach (var pair in Data)
+                    {
+                        tw.WriteLine(pair.Key + ":" + pair.Value);
+                    }
+                }
+                Console.WriteLine("Data saved to file at " + fi.FullName);
             }
-            Console.WriteLine("Data saved to file at " + fi.FullName);
         }
 
         public static void Write(string key, string value)
@@ -105,13 +111,16 @@ namespace Service
                 throw new FaultException<DataException>(new DataException("Value cannot be null, empty, or whitespace"));
             }
 
-            if (Data.ContainsKey(key))
+            lock (Data)
             {
-                Data[key] = value;
-            }
-            else
-            {
-                Data.Add(key, value);
+                if (Data.ContainsKey(key))
+                {
+                    Data[key] = value;
+                }
+                else
+                {
+                    Data.Add(key, value);
+                }
             }
         }
         internal static string Read(string key)
@@ -121,13 +130,16 @@ namespace Service
                 throw new FaultException<DataException>(new DataException("Key cannot be null, empty, or whitespace"));
             }
 
-            if (Data.ContainsKey(key))
+            lock (Data)
             {
-                return Data[key];
-            }
-            else
-            {
-                throw new FaultException<DataException>(new DataException("Key doesn't exist in database."));
+                if (Data.ContainsKey(key))
+                {
+                    return Data[key];
+                }
+                else
+                {
+                    throw new FaultException<DataException>(new DataException("Key doesn't exist in database."));
+                }
             }
         }
 
