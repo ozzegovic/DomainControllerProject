@@ -97,7 +97,18 @@ namespace Service
             ServiceHost serviceHost = new ServiceHost(typeof(DataManagement));
             serviceHost.AddServiceEndpoint(typeof(IDataManagement), bindingClient, addressClient);
             serviceHost.AddServiceEndpoint(typeof(IDataManagementDC), bindingClient, addressClient);
-            serviceHost.Open();
+            
+            try
+            {
+                serviceHost.Open();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to start service. Error: {0}", e.Message);
+                Console.WriteLine("Press return to exit.");
+                Console.ReadLine();
+                return;
+            }
 
             Console.WriteLine($"Service {serviceName} started. Press return to exit.");
 

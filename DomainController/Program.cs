@@ -31,7 +31,17 @@ namespace DomainController
             serviceHost.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
             serviceHost.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
 
-            serviceHost.Open();
+            try
+            {
+                serviceHost.Open();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to start Domain Controller. Error: {0}", e.Message);
+                Console.WriteLine("Press return to exit.");
+                Console.ReadLine();
+                return;
+            }
 
             //Authentication Service Audit
             ServiceSecurityAuditBehavior asAudit = new ServiceSecurityAuditBehavior();
@@ -47,7 +57,18 @@ namespace DomainController
             ASHost.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
             ASHost.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
 
-            ASHost.Open();
+            try
+            {
+                ASHost.Open();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to start Authentication Service. Error: {0}", e.Message);
+                Console.WriteLine("Press return to exit.");
+                Console.ReadLine();
+                serviceHost.Close();
+                return;
+            }
 
             //Ticket Granting Service Audit
             ServiceSecurityAuditBehavior tgsAudit = new ServiceSecurityAuditBehavior();
@@ -63,7 +84,19 @@ namespace DomainController
             TGSHost.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
             TGSHost.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
 
-            TGSHost.Open();
+            try
+            {
+                TGSHost.Open();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to start Ticket Granting Service. Error: {0}", e.Message);
+                Console.WriteLine("Press return to exit.");
+                Console.ReadLine();
+                ASHost.Close();
+                serviceHost.Close();
+                return;
+            }
 
             Console.WriteLine("Server domain controller client started...");
             Console.WriteLine("Server domain controller service started...");
