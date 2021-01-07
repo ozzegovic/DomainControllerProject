@@ -14,6 +14,8 @@ namespace Contracts.Cryptography
 
         public static byte[] Encrypt(string plaintext, byte[] secretKey)
         {
+            // key needs to be 24 bytes
+
             if (string.IsNullOrEmpty(plaintext))
             {
                 return null;
@@ -37,13 +39,12 @@ namespace Contracts.Cryptography
                 Key = secretkey,
                 Mode = mode,
                 Padding = PaddingMode.Zeros,
-                IV = new byte[] {1,2,3,4,5,6,7,8}
                 
             };
 
             
    
-           // tripleDesCryptoProvider.GenerateIV();
+            tripleDesCryptoProvider.GenerateIV();
             ICryptoTransform tripleDesEncryptTransform = tripleDesCryptoProvider.CreateEncryptor();
             encryptedOutput = tripleDesCryptoProvider.IV.Concat(tripleDesEncryptTransform.TransformFinalBlock(plaintextInput, 0, plaintextInput.Length).ToArray()).ToArray();
 
@@ -52,10 +53,11 @@ namespace Contracts.Cryptography
         }
 
 
-
         public static byte[] Decrypt(byte[] input, byte[] secretKey)
         {
-            if(input == null || input.Length == 0)
+            // key needs to be 24 bytes
+
+            if (input == null || input.Length == 0)
             {
                 return null;
             }
