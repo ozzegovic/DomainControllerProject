@@ -42,6 +42,10 @@ namespace DomainController
             Console.WriteLine("Server domain controller client started...");
             Console.WriteLine("Server domain controller service started...");
             Console.ReadLine();
+
+            ASHost.Close();
+            TGSHost.Close();
+            serviceHost.Close();
         }
     }
 }

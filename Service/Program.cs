@@ -103,9 +103,10 @@ namespace Service
 
             Console.ReadLine();
 
-            Database.Save(username);
-
             Console.WriteLine("Closing...");
+
+            Database.Save(username);
+            serviceHost.Close();
             Thread.Sleep(2000);
         }
     }

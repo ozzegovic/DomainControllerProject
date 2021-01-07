@@ -77,6 +77,7 @@ namespace Client
 
                     do
                     {
+                        Console.WriteLine();
                         Console.WriteLine("Choose an action:");
                         Console.WriteLine("\t- 'w' to write");
                         Console.WriteLine("\t- 'r' to read");
