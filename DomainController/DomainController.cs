@@ -98,7 +98,7 @@ namespace DomainController
                 try
                 {
                     Console.WriteLine("Domain controller: Sending session key to the service...");
-                    byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].Username];
+                    byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
                     string user = Database.usersRequestsDB[sessionId].Username;
                     keySent = serviceProxy.SendSessionKey(user, _3DESAlgorithm.Encrypt(key, pwHash));
                 }
