@@ -45,6 +45,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auditing\Audit.cs" />
+    <Compile Include="Auditing\AuditEventFile.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AuditEventFile.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Auditing\AuditEvents.cs" />
     <Compile Include="AuthenticationService\AuthService.cs" />
     <Compile Include="AuthenticationService\IAuthenticationService.cs" />
     <Compile Include="TicketGrantingService\Service.cs" />
@@ -68,6 +75,12 @@
       <Project>{012328bd-c044-4a3a-9b21-9b2976f89ebb}</Project>
       <Name>Contracts</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Auditing\AuditEventFile.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AuditEventFile.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

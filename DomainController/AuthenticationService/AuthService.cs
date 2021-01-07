@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using DomainController.Auditing;
 
 namespace DomainController
 {
@@ -37,6 +38,7 @@ namespace DomainController
         // after receiving ''response'' from the client/service
         // encrypt the sent challenge with the stored password hash
         // if the received response and the encryption are the same, user authentication is complete
+        // Logs result
         public bool CheckPassword(UserRequest userRequest, byte[] response)
         {
             byte[] passHash;
@@ -50,11 +52,29 @@ namespace DomainController
 
             if(Equals(expected, response))
             {
+                try
+                {
+                    Audit.AuthenticationSuccess(userRequest.Username);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
                 Console.WriteLine($"Authentication service: {userRequest.Username} authenticated.");
                 return true; 
             }
             else
             {
+                try
+                {
+                    Audit.AuthenticationFailure(userRequest.Username);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service: Invalid password"));
             }
         }
