@@ -48,7 +48,7 @@ namespace DomainController.Auditing
         {
             get
             {
-                return resourceManager.GetString(AuditEventTypes.AuthenticationFailure.ToString());
+                return ResourceManager.GetString(AuditEventTypes.AuthenticationFailure.ToString());
             }
         }
 

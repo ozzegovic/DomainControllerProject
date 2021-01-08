@@ -23,6 +23,14 @@ namespace DomainController
 
             if (!Database.usersDB.ContainsKey(username))
             {
+                try
+                {
+                    Audit.AuthenticationFailure(username);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
                 throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: Username '{username}' not found"));
             }
             else
@@ -75,7 +83,7 @@ namespace DomainController
                     Console.WriteLine(e.Message);
                 }
 
-                throw new FaultException<SecurityException>(new SecurityException("Authentication Service: Invalid password"));
+                throw new FaultException<SecurityException>(new SecurityException("Authentication Service: Invalid password."));
             }
         }
 
