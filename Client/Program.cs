@@ -32,11 +32,14 @@ namespace Client
             string password;
             Console.WriteLine("Logging in as " + username);
 
+            //user account password
+            Console.WriteLine("Enter password:");
+            password = Console.ReadLine();
+
+            //requested service
             Console.WriteLine("Enter service name: ");
             string serviceName = Console.ReadLine();
 
-            Console.WriteLine("Enter password:");
-            password = Console.ReadLine();
 
             byte[] pwBytes = Encoding.ASCII.GetBytes(password);
             byte[] secret;
@@ -52,6 +55,7 @@ namespace Client
 
                     sessionData = proxy.SendResponse(response);
                     Console.WriteLine($"Found service address: {sessionData.ServiceAddress}");
+                    Console.WriteLine("--------------------------------------------------------------------------------");
                 }
             }
             catch (Exception e)
@@ -96,6 +100,7 @@ namespace Client
                                 encryptedValue = proxy.Read(encryptedKey);
                                 if (encryptedValue == null)
                                 {
+                                    Console.WriteLine("Encryption error...");
                                     break;
                                 }
                                 value = Encoding.ASCII.GetString(_3DESAlgorithm.Decrypt(encryptedValue, sessionKey));
@@ -111,15 +116,23 @@ namespace Client
                                 Console.WriteLine("Encrypting and sending WRITE request...");
                                 encryptedKey = _3DESAlgorithm.Encrypt(key, sessionKey);
                                 encryptedValue = _3DESAlgorithm.Encrypt(value, sessionKey);
+                                if (encryptedValue == null || encryptedKey == null)
+                                {
+                                    Console.WriteLine("Encryption error...");
+                                    break;
+                                }
+
                                 if (proxy.Write(encryptedKey, encryptedValue))
                                 {
                                     Console.WriteLine("Value written successfully.");
                                 }
+
                                 break;
 
                             default:
                                 break;
                         }
+                        Console.WriteLine("--------------------------------------------------------------------------------");
 
                     } while (c != 'x');
                 }

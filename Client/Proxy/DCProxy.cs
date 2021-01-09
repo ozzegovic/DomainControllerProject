@@ -34,6 +34,10 @@ namespace Client.Proxy
                
                 throw new Exception("Failed: " + e.Detail.Message);
             }
+            catch (CommunicationException e)
+            {
+                throw new Exception($"Communication error: {e.Message}");
+            }
             catch (Exception e)
             {
                
@@ -52,6 +56,10 @@ namespace Client.Proxy
             {
                 
                 throw new Exception("Failed: " + e.Detail.Message);
+            }
+            catch (CommunicationException e)
+            {
+                throw new Exception($"Communication error: {e.Message}");
             }
             catch (Exception e)
             {
