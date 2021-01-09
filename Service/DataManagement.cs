@@ -24,7 +24,8 @@ namespace Service
         // encrypt read values and send back to the client
         public byte[] Read(byte[] encryptedKey)
         {
-            Console.WriteLine("Received encrypted READ request");
+            Console.WriteLine("----------------------------------------------------------------------------------");
+            Console.WriteLine("Received encrypted READ request...");
             IIdentity identity = Thread.CurrentPrincipal.Identity;
             WindowsIdentity windowsIdentity = identity as WindowsIdentity;
 
@@ -42,7 +43,7 @@ namespace Service
             catch (Exception e)
             {
                 Console.WriteLine("Data Error: {0}", e.Message);
-                throw new FaultException<DataException>(new DataException("Data Error: Key cannot be  null, empty, or whitespace"));
+                throw new FaultException<DataException>(new DataException("Data Error: Key cannot be  null, empty, or whitespace."));
             }
             try
             {
@@ -74,6 +75,7 @@ namespace Service
             }
             else
             {
+                Console.WriteLine($"Security error: {user} not authenticated.");
                 throw new FaultException<SecurityException>(new SecurityException($"Security error: {user} not authenticated."));
             }
         }
@@ -82,7 +84,8 @@ namespace Service
         // write data to the database
         public bool Write(byte[] encryptedKey, byte[] encryptedValue)
         {
-            Console.WriteLine("Received encrypted WRITE request");
+            Console.WriteLine("----------------------------------------------------------------------------------");
+            Console.WriteLine("Received encrypted WRITE request...");
 
             IIdentity identity = Thread.CurrentPrincipal.Identity;
             WindowsIdentity windowsIdentity = identity as WindowsIdentity;
@@ -126,9 +129,9 @@ namespace Service
 
 
         // Domain Controller sends session key after a client requested the service
-        // TODO: Set service to offline if it disconnects
         public bool SendSessionKey(string user, byte[] encryptedSessionKey)
         {
+
             Console.WriteLine("Received encrypted session key");
 
             if(serviceSecret == null)
@@ -140,7 +143,7 @@ namespace Service
             if (userSessions.ContainsKey(user))
             {
                 userSessions[user] = sessionKey;
-                Console.WriteLine("Updated user session key.");
+                Console.WriteLine($"Updated {user} session key.");
                 return true;
             }
             else
