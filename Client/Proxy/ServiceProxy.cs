@@ -28,6 +28,11 @@ namespace Client.Proxy
                 Console.WriteLine("Data Error: {0}", e.Detail.Message);
                 return null;
             }
+            catch (FaultException<SecurityException> e)
+            {
+
+                throw new Exception("Failed: " + e.Detail.Message);
+            }
             catch (CommunicationException e)
             {
                 throw new Exception($"Communication error: {e.Message}");
@@ -49,6 +54,11 @@ namespace Client.Proxy
             {
                 Console.WriteLine("Data Error: {0}", e.Detail.Message);
                 return false;
+            }
+            catch (FaultException<SecurityException> e)
+            {
+
+                throw new Exception("Failed: " + e.Detail.Message);
             }
             catch (CommunicationException e)
             {

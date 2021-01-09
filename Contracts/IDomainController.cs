@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Contracts
 {
+    // available to Client
     [ServiceContract]
     public interface IDomainControllerClient 
     {
@@ -24,16 +25,18 @@ namespace Contracts
 
     }
 
+    // available to Service
     [ServiceContract]
     public interface IDomainControllerService 
     {
-        // if service exists, return challenge
+        // if user exists, return challenge
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         short StartServiceAuthentication(string serviceName);
 
         // compare the response with the service password from the database
-        // return service address if found
+        // validate the service and activate the service
+        // return confirmation
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         bool SendResponseService(byte[] response);

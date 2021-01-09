@@ -15,10 +15,12 @@ namespace Contracts
 
         [OperationContract]
         [FaultContract(typeof(DataException))]
+        [FaultContract(typeof(SecurityException))]
         byte[] Read(byte[] key);
 
         [OperationContract]
         [FaultContract(typeof(DataException))]
+        [FaultContract(typeof(SecurityException))]
         bool Write(byte[] key, byte[] value);
     }
 

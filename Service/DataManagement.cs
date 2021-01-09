@@ -74,7 +74,7 @@ namespace Service
             }
             else
             {
-                throw new FaultException<SecurityException>(new SecurityException("Security error: Client-Service session not established."));
+                throw new FaultException<SecurityException>(new SecurityException($"Security error: {user} not authenticated."));
             }
         }
 
