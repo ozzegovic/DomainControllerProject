@@ -11,6 +11,7 @@ namespace DomainController.TicketGrantingService
         // dnsTable contains all the supported services
         internal static Dictionary<string, Service> dnsTable = new Dictionary<string, Service>();
 
+        // currently service username must match the service name
         static DNSTable()
         {
             string name0 = "wcfService";

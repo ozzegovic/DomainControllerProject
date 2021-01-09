@@ -40,9 +40,10 @@ namespace DomainController.Proxy
             }
         }
 
-        // after receiving ''response'' from the client/service
+        // after receiving response from the client/service
         // encrypt the sent challenge with the stored password hash
-        // if the received response and the encryption are the same, user authentication is complete
+        // if the received response and the result are the same, user authentication is complete
+        // Logs result
         public bool CheckPassword(UserRequest userRequest, byte[] response)
         {
             try

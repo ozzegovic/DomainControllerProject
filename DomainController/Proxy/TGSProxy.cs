@@ -18,13 +18,32 @@ namespace DomainController.Proxy
             factory = this.CreateChannel();
         }
 
-        // currently: checks if the service exists in the dnsTable and returns the full address
-        // Client then uses this address to connect to the service
+        // checks if the requested service exists in the dnsTable and returns the full address
         public string GetServiceAddress(string serviceAddress)
         {
             try
             {
                 return factory.GetServiceAddress(serviceAddress);
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
+
+        // check if requested service is active
+        public bool IsServiceOnline(string serviceName)
+        {
+            try
+            {
+                return factory.IsServiceOnline(serviceName);
             }
             catch (FaultException<SecurityException> ex)
             {
@@ -59,32 +78,12 @@ namespace DomainController.Proxy
             }
         }
 
-        
+        // could not connect to the service, set it to inactive
         public bool DeactivateService(string serviceName)
         {
             try
             {
                 return factory.DeactivateService(serviceName);
-            }
-            catch (FaultException<SecurityException> ex)
-            {
-
-                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
-
-            }
-            catch (Exception e)
-            {
-
-                throw new Exception(e.Message);
-            }
-        }
-
-        //check if requested service is active
-        public bool IsServiceOnline(string serviceName)
-        {
-            try
-            {
-                return factory.IsServiceOnline(serviceName);
             }
             catch (FaultException<SecurityException> ex)
             {

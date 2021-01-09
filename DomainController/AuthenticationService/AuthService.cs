@@ -43,9 +43,9 @@ namespace DomainController
         }
 
 
-        // after receiving ''response'' from the client/service
+        // after receiving response from the client/service
         // encrypt the sent challenge with the stored password hash
-        // if the received response and the encryption are the same, user authentication is complete
+        // if the received response and the result are the same, user authentication is complete
         // Logs result
         public bool CheckPassword(UserRequest userRequest, byte[] response)
         {
@@ -83,7 +83,7 @@ namespace DomainController
                     Console.WriteLine(e.Message);
                 }
 
-                throw new FaultException<SecurityException>(new SecurityException("Authentication Service: Invalid password."));
+                throw new FaultException<SecurityException>(new SecurityException($"Authentication Service: {userRequest.Username} failed to authenticate. Invalid password."));
             }
         }
 

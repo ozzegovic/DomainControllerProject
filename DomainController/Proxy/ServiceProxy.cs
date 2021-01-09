@@ -10,7 +10,6 @@ namespace DomainController
 {
     public class ServiceProxy : ChannelFactory<IDataManagementDC>, IDataManagementDC, IDisposable
     {
-        // authenticated client requested a DataManagement service (service is active)
 
         IDataManagementDC factory;
 
@@ -22,6 +21,12 @@ namespace DomainController
         {
             factory = this.CreateChannel();
         }
+
+
+        // authenticated client requested a DataManagement service (service is active)
+        // try to send the session key to the service
+        // if fails, set service to not active
+
         public bool SendSessionKey(string user, byte[] encryptedSessionKey)
         {
 
@@ -39,7 +44,7 @@ namespace DomainController
             catch (CommunicationException e)
             {
 
-                throw new CommunicationException("Could not connect to service.");
+                throw new CommunicationException(" Failed to send the session key - Could not connect to the service.");
             }
             catch (Exception e)
             {
