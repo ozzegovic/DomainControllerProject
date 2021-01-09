@@ -52,9 +52,9 @@ namespace DomainController
                 }
             }
 
-            string serviceAddress;
+            string serviceAddress; // full address of the service
             string serviceUser; // username of the service account that started the requested service
-            string serviceName = Database.usersRequestsDB[sessionId].RequestedService;
+            string serviceName = Database.usersRequestsDB[sessionId].RequestedService; //service name 
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: User failed to authenticate."));
             else
@@ -100,6 +100,8 @@ namespace DomainController
             bool keySent = false;
             EndpointAddress endpointAddressService = new EndpointAddress(new Uri(serviceAddress), EndpointIdentity.CreateUpnIdentity(serviceName));
 
+            // first try to send the session key to the service
+            // save confirmation to keySent
             using (serviceProxy = new ServiceProxy(new NetTcpBinding(), endpointAddressService))
             {
                 try
@@ -134,10 +136,13 @@ namespace DomainController
                 }
 
             }
-
+            // session key successfully sent to the service
+            // return session key to the client
             if (keySent)
             {
                 Console.WriteLine("Domain controller: Sending session key and service address to the client...");
+                Console.WriteLine("----------------------------------------------------------------------------------");
+
                 return new ClientSessionData(Database.usersRequestsDB[sessionId].SessionKey, serviceAddress);
             }
             else
@@ -163,6 +168,8 @@ namespace DomainController
                     }
 
                 }
+                Console.WriteLine("----------------------------------------------------------------------------------");
+
             }
             throw new FaultException<SecurityException>(new SecurityException("Domain controller: Service not active."));
         }
@@ -293,26 +300,34 @@ namespace DomainController
                         Console.WriteLine($"Ticket Granting Service: {userRequest.RequestedService} activated by {userRequest.Username}.");
 
                         Console.WriteLine($"Ticket Granting Service: Sending confirmation to {serviceAddress}...");
+                        Console.WriteLine();
                         return true;
                     }
                     catch (FaultException<SecurityException> ex)
                     {
                         Console.WriteLine(ex.Detail.Message);
+                        Console.WriteLine("----------------------------------------------------------------------------------");
+
                         throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
 
                     }
                     catch(CommunicationException ex)
                     {
                         Console.WriteLine(ex.Message);
+                        Console.WriteLine("----------------------------------------------------------------------------------");
+
                         throw new FaultException<SecurityException>(new SecurityException(ex.Message));
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
+                        Console.WriteLine("----------------------------------------------------------------------------------");
+
                         throw new Exception(ex.Message);
                     }
                 }
             }
+
         }
 
 
