@@ -31,6 +31,11 @@ namespace Service
             {
                 throw new Exception(e.Detail.Message);
             }
+            catch (CommunicationException e)
+            {
+               
+                throw new Exception($"Communication error: Could not connect to the Domain Controller. Please restart.");
+            }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
@@ -47,6 +52,10 @@ namespace Service
             catch (FaultException<SecurityException> e)
             {
                 throw new Exception(e.Detail.Message);
+            }
+            catch (CommunicationException e)
+            {
+                throw new Exception($"Communication error: Could not connect to the Domain Controller. Please restart.");
             }
             catch (Exception e)
             {

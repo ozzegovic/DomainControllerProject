@@ -28,7 +28,11 @@ namespace Service
 
 
             string username = Environment.UserName;
-            Console.WriteLine("Logging in as " + username);
+            Console.WriteLine("Logging in as " + username +"\n");
+
+            Console.WriteLine("Enter password");
+            string password = Console.ReadLine();
+
             Console.WriteLine("Enter service name:"); //which service to start
             string serviceName = Console.ReadLine();
 
@@ -50,45 +54,40 @@ namespace Service
 
             string addressClient = $"net.tcp://localhost:{port}/" + serviceName;
 
-            Console.WriteLine("Enter password");
-            string password = Console.ReadLine();
 
             byte[] pwBytes = Encoding.ASCII.GetBytes(password);
             ChallengeResponse cr = new ChallengeResponse();
 
             bool successful = false;
 
-            try
+            using (DCProxy proxy = new DCProxy(binding, endpointAddressDC))
             {
-                using (DCProxy proxy = new DCProxy(binding, endpointAddressDC))
+                try
                 {
                     serviceSecret = sha256Hash.ComputeHash(pwBytes);
                     short salt = proxy.StartServiceAuthentication(serviceName);
                     byte[] response = cr.Encrypt(serviceSecret, salt);
 
-                    successful = proxy.SendResponseService(response);
+                    successful = proxy.SendResponseService(response); // if not successful it will throw an exception 
+                    Database.Load(username);
+                    Console.WriteLine();
                 }
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+                catch (Exception e)
+                {
 
-            if (successful)
-            {
-                Database.Load(username);
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine("Press return to exit.");
+                    Console.ReadLine();
+                    return;
+                }
+
             }
-            else
-            {
-                Console.WriteLine("Failed to connect service to Domain Controller.");
-                Console.WriteLine("Press return to exit.");
-                Console.ReadLine();
-                return;
-            }
+           
+
 
             Console.WriteLine("Starting service...");
 
-            // connection with the client
+            // connection with the client and the Domain Controller
             NetTcpBinding bindingClient = new NetTcpBinding();
             bindingClient.Security.Mode = SecurityMode.Transport;
             bindingClient.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
@@ -96,6 +95,8 @@ namespace Service
 
             ServiceHost serviceHost = new ServiceHost(typeof(DataManagement));
             serviceHost.AddServiceEndpoint(typeof(IDataManagement), bindingClient, addressClient);
+
+            //for receiving the session key
             serviceHost.AddServiceEndpoint(typeof(IDataManagementDC), bindingClient, addressClient);
             
             try
