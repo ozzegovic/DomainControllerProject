@@ -10,7 +10,7 @@ namespace DomainController
 {
     public class Database
     {
-        // save session data
+        // save session data for each user that tries to authenticate
         internal static Dictionary<string, UserRequest> usersRequestsDB = new Dictionary<string, UserRequest>();
 
         internal static Dictionary<string, byte[]> usersDB = new Dictionary<string, byte[]>();
@@ -18,14 +18,14 @@ namespace DomainController
 
         static Database()
         {
+            // add client accounts
             usersDB.Add("wcfClient", computeHash("pass"));
             usersDB.Add("wcfClient1", computeHash("pass1"));
             usersDB.Add("wcfClient2", computeHash("pass2"));
-            usersDB.Add("wcfService", computeHash("svc"));
-            usersDB.Add("wcfService1", computeHash("svc1"));
 
             // add service accounts
-            usersDB.Add("DataManagementService", computeHash("pass"));
+            usersDB.Add("wcfService", computeHash("svc"));
+            usersDB.Add("wcfService1", computeHash("svc1"));
 
             byte[] computeHash(string password)
             {

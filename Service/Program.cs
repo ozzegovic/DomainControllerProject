@@ -35,7 +35,7 @@ namespace Service
             // this is only needed for testing since every service instance is run on localhost
             // in production every service instance should have it's unique address
             short port;
-            switch (username)
+            switch (serviceName)
             {
                 case "wcfService":
                     port = 9900;

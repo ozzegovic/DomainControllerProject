@@ -11,6 +11,7 @@ namespace DomainController.TicketGrantingService
         public string Name { get; set; }
         public string Address { get; set; }
         public bool Active { get; set; }
+        public string StartedBy { get; set; }
 
         public Service(string name, string addr)
         {

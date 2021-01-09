@@ -15,7 +15,7 @@ namespace DomainController.TicketGrantingService
     public class TGService : ITicketGrantingService
     {
 
-        // currently: checks if the service exists in the dnsTable and returns the full address
+        // checks if the service exists in the dnsTable and returns the full address
         // Client then uses this address to connect to the service
         // Logs result
         public string GetServiceAddress(string serviceName)
@@ -47,9 +47,23 @@ namespace DomainController.TicketGrantingService
                 return DNSTable.dnsTable[serviceName].Address + "/" + serviceName;
             }
         }
+        // Domain Contoller then uses this username to get the correct pass hash in order to encrypt the session key
+        public string GetServiceUser(string serviceName)
+        {
+            if (!DNSTable.dnsTable.ContainsKey(serviceName))
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException("Ticket Granting Service: Service not found."));
+            }
+            else
+            {
+
+                return DNSTable.dnsTable[serviceName].StartedBy;
+            }
+        }
 
         // Set service to active
-        public bool ActivateService(string serviceName)
+        public bool ActivateService(string serviceName, string username)
         {
             if (DNSTable.dnsTable.ContainsKey(serviceName))
             {
@@ -60,6 +74,7 @@ namespace DomainController.TicketGrantingService
                 else
                 {
                     DNSTable.dnsTable[serviceName].Active = true;
+                    DNSTable.dnsTable[serviceName].StartedBy = username;
                     return true;
                 }
             }
@@ -69,6 +84,8 @@ namespace DomainController.TicketGrantingService
             }
         }
         
+
+        // Set service to inactive
         public bool DeactivateService(string serviceName)
         {
             if (DNSTable.dnsTable.ContainsKey(serviceName))
@@ -80,6 +97,7 @@ namespace DomainController.TicketGrantingService
                 else
                 {
                     DNSTable.dnsTable[serviceName].Active = false;
+                    DNSTable.dnsTable[serviceName].StartedBy = "";
                     return true;
                 }
             }
@@ -102,6 +120,7 @@ namespace DomainController.TicketGrantingService
             }
         }
 
+        // generate session key
         public string GenerateSessionKey()
         {
             RandomNumberGenerator rng = RandomNumberGenerator.Create();

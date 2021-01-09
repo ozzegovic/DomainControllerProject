@@ -16,10 +16,17 @@ namespace DomainController.TicketGrantingService
         [FaultContract(typeof(SecurityException))]
         string GetServiceAddress(string serviceAddress);
 
-        // after service authentication, add it to the active services list
+        // gets the username of the account that started the service
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        bool ActivateService(string serviceAddress);
+        string GetServiceUser(string serviceAddress);
+
+
+        // after service authentication, add it to the active services list
+        // save username that started the service
+        [OperationContract]
+        [FaultContract(typeof(SecurityException))]
+        bool ActivateService(string serviceAddress, string username);
 
         // could not connect to the service, set it to inactive
         [OperationContract]

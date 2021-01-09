@@ -38,6 +38,26 @@ namespace DomainController.Proxy
             }
         }
 
+        // gets the username of the account that started the service
+        public string GetServiceUser(string serviceAddress)
+        {
+            try
+            {
+                return factory.GetServiceUser(serviceAddress);
+            }
+            catch (FaultException<SecurityException> ex)
+            {
+
+                throw new FaultException<SecurityException>(new SecurityException(ex.Detail.Message));
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+        }
+
         // check if requested service is active
         public bool IsServiceOnline(string serviceName)
         {
@@ -59,11 +79,12 @@ namespace DomainController.Proxy
         }
 
         // after service authentication, add it to the active services list
-        public bool ActivateService(string serviceName)
+        // save username that started the service
+        public bool ActivateService(string serviceName, string username)
         {
             try
             {
-                return factory.ActivateService(serviceName);
+                return factory.ActivateService(serviceName, username);
             }
             catch (FaultException<SecurityException> ex)
             {

@@ -53,6 +53,7 @@ namespace DomainController
             }
 
             string serviceAddress;
+            string serviceUser; // username of the service account that started the requested service
             string serviceName = Database.usersRequestsDB[sessionId].RequestedService;
             if (!authenticated)
                 throw new FaultException<SecurityException>(new SecurityException("Authentication Service error: User failed to authenticate."));
@@ -65,6 +66,10 @@ namespace DomainController
                         serviceAddress = tgsProxy.GetServiceAddress(serviceName);
                         Console.WriteLine($"Ticket Granting Service: Requested {serviceName} found. Address: {serviceAddress}.");
 
+                        serviceUser = tgsProxy.GetServiceUser(serviceName);
+                        Console.WriteLine($"Ticket Granting Service: {serviceName} started by {serviceUser}.");
+
+
                         if (!tgsProxy.IsServiceOnline(serviceName))
                         {
                             throw new FaultException<SecurityException>(new SecurityException($"Ticket Granting Service: {serviceName} is offline"));
@@ -73,6 +78,8 @@ namespace DomainController
 
                         Console.WriteLine("Ticket Granting Service: Generating session key ...");
                         key = tgsProxy.GenerateSessionKey();
+
+                        // encrypting client session key
                         byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].Username];
                         Database.usersRequestsDB[sessionId].SessionKey = _3DESAlgorithm.Encrypt(key, pwHash);
 
@@ -98,7 +105,13 @@ namespace DomainController
                 try
                 {
                     Console.WriteLine("Domain controller: Sending session key to the service...");
-                    byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
+
+                    // service name and service username would have to be equal
+                    //byte[] pwHash = Database.usersDB[Database.usersRequestsDB[sessionId].RequestedService];
+
+                    // encrypting service session key with the password hash of the service
+                    // service name and service username do not need to be equal
+                    byte[] pwHash = Database.usersDB[serviceUser];
                     string user = Database.usersRequestsDB[sessionId].Username;
                     keySent = serviceProxy.SendSessionKey(user, _3DESAlgorithm.Encrypt(key, pwHash));
                 }
@@ -276,8 +289,8 @@ namespace DomainController
                             return true;
                         }
 
-                        tgsProxy.ActivateService(userRequest.RequestedService);
-                        Console.WriteLine($"Ticket Granting Service: {userRequest.RequestedService} activated.");
+                        tgsProxy.ActivateService(userRequest.RequestedService, userRequest.Username);
+                        Console.WriteLine($"Ticket Granting Service: {userRequest.RequestedService} activated by {userRequest.Username}.");
 
                         Console.WriteLine($"Ticket Granting Service: Sending confirmation to {serviceAddress}...");
                         return true;
